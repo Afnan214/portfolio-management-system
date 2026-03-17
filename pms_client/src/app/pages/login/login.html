@@ -1,0 +1,92 @@
+<section class="min-h-screen bg-[#f6f8f6] text-slate-800">
+  <!-- Top bar -->
+  <app-navbar />
+
+  <div
+    class="mx-auto grid min-h-[calc(100vh-73px)] max-w-7xl gap-10 px-6 py-10 lg:grid-cols-[1.1fr_460px] lg:px-10 lg:py-14">
+    <!-- Left side -->
+    <div class="flex items-center">
+      <div class="max-w-2xl">
+        <div
+          class="mb-4 inline-flex items-center rounded-full bg-green-50 px-3 py-1 text-sm font-medium text-green-700 ring-1 ring-green-100">
+          Welcome back
+        </div>
+
+        <h1 class="text-4xl font-semibold leading-tight text-slate-900 lg:text-5xl">
+          Log in and continue managing your investments with clarity
+        </h1>
+
+        <p class="mt-5 max-w-xl text-lg leading-8 text-slate-600">
+          Stay on top of your portfolio, monitor growth, and access the tools you need in a clean and focused workspace.
+        </p>
+
+        <div class="mt-10 max-w-2xl rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm">
+          <div class="rounded-[24px] bg-[#eef7ee] p-8">
+            <p class="text-sm font-medium text-slate-500">Combined equity</p>
+            <p class="mt-1 text-4xl font-semibold text-slate-900">$0.00</p>
+            <p class="mt-4 max-w-md text-sm leading-6 text-slate-600">
+              Your dashboard keeps everything in one place so you can track holdings, balances, and account activity
+              more easily.
+            </p>
+
+            <div class="mt-6 flex gap-3">
+              <div class="rounded-2xl border border-white/70 bg-white px-4 py-3 text-sm text-slate-600">
+                Self directed
+              </div>
+              <div class="rounded-2xl border border-white/70 bg-white px-4 py-3 text-sm text-slate-600">
+                Account insights
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right form -->
+    <div class="flex items-center justify-center">
+      <div class="w-full rounded-[28px] border border-slate-200 bg-white p-8 shadow-sm sm:p-10">
+        <div class="mb-8">
+          <h2 class="text-2xl font-semibold text-slate-900">Log in</h2>
+          <p class="mt-2 text-sm leading-6 text-slate-500">
+            Enter your email and password to continue.
+          </p>
+        </div>
+
+        <form class="space-y-5" (ngSubmit)="onSubmit()">
+          <div>
+            <label class="mb-2 block text-sm font-medium text-slate-700">Email</label>
+            <input type="email" name="email" [(ngModel)]="formData.email" placeholder="jasondoe21@gmail.com"
+              class="h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-green-500 focus:ring-2 focus:ring-green-100" />
+          </div>
+
+          <div>
+            <div class="mb-2 flex items-center justify-between">
+              <label class="block text-sm font-medium text-slate-700">Password</label>
+              <a class="text-sm font-medium text-slate-500 hover:text-slate-700">Forgot password?</a>
+            </div>
+            <input type="password" name="password" [(ngModel)]="formData.password" placeholder="********"
+              class="h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-green-500 focus:ring-2 focus:ring-green-100" />
+          </div>
+
+          <button type="submit" [disabled]="isSubmitting"
+            class="inline-flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-green-600 text-sm font-semibold text-white transition hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-70">
+
+            @if (isSubmitting) {
+            <span class="loading loading-spinner loading-sm"></span>
+            <span>Signing in...</span>
+            } @else {
+            <span>Log in</span>
+            }
+          </button>
+        </form>
+
+        <p class="mt-6 text-center text-sm text-slate-500">
+          Don’t have an account?
+          <a [routerLink]="['/register']" class="font-semibold text-green-700 hover:text-green-800">
+            Register
+          </a>
+        </p>
+      </div>
+    </div>
+  </div>
+</section>

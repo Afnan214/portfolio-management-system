@@ -1,17 +1,20 @@
 import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { AuthService } from '../auth/auth-service';
-import { RegisterRequest } from '../auth/register-request';
+import { AuthService } from '../../auth/auth-service';
+import { RegisterRequest } from '../../auth/register-request';
+import { Navbar } from '../../components/navbar/navbar';
+import { Router, RouterLink } from '@angular/router';
+import { LandingPage } from '../landing-page/landing-page';
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, Navbar, RouterLink],
   templateUrl: './register.html',
   styleUrl: './register.css',
 })
 export class Register {
   private authService = inject(AuthService);
-
+  private router = inject(Router);
   formData: RegisterRequest = {
     firstName: '',
     lastName: '',
@@ -36,6 +39,8 @@ export class Register {
           password: '',
         };
         this.isSubmitting = false;
+
+        this.router.navigate(['/dashboard']);
       },
       error: (error) => {
         console.log('Register failed', error);

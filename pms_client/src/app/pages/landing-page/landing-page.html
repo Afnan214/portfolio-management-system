@@ -2,62 +2,74 @@
   <!-- Parallax SVG shapes -->
   <div class="parallax-shapes">
     <!-- Circle - top left -->
-    <svg class="shape shape-1" [style.transform]="'translateY(' + scrollY * 0.15 + 'px)'" width="120" height="120" viewBox="0 0 120 120">
-      <circle cx="60" cy="60" r="60" fill="#00bf63" opacity="0.2"/>
+    <svg class="shape shape-1" [style.transform]="'translateY(' + scrollY * 0.15 + 'px)'" width="120" height="120"
+      viewBox="0 0 120 120">
+      <circle cx="60" cy="60" r="60" fill="#00bf63" opacity="0.2" />
     </svg>
 
     <!-- Rounded square - top right -->
-    <svg class="shape shape-2" [style.transform]="'translateY(' + scrollY * -0.1 + 'px)'" width="80" height="80" viewBox="0 0 80 80">
-      <rect width="80" height="80" rx="16" fill="#E8713A" opacity="0.18"/>
+    <svg class="shape shape-2" [style.transform]="'translateY(' + scrollY * -0.1 + 'px)'" width="80" height="80"
+      viewBox="0 0 80 80">
+      <rect width="80" height="80" rx="16" fill="#E8713A" opacity="0.18" />
     </svg>
 
     <!-- Small circle - mid left -->
-    <svg class="shape shape-3" [style.transform]="'translateY(' + scrollY * 0.2 + 'px)'" width="50" height="50" viewBox="0 0 50 50">
-      <circle cx="25" cy="25" r="25" fill="#7c6bff" opacity="0.22"/>
+    <svg class="shape shape-3" [style.transform]="'translateY(' + scrollY * 0.2 + 'px)'" width="50" height="50"
+      viewBox="0 0 50 50">
+      <circle cx="25" cy="25" r="25" fill="#7c6bff" opacity="0.22" />
     </svg>
 
     <!-- Triangle - mid right -->
-    <svg class="shape shape-4" [style.transform]="'translateY(' + scrollY * -0.15 + 'px) rotate(' + scrollY * 0.03 + 'deg)'" width="90" height="78" viewBox="0 0 90 78">
-      <polygon points="45,0 90,78 0,78" fill="#00bf63" opacity="0.15"/>
+    <svg class="shape shape-4"
+      [style.transform]="'translateY(' + scrollY * -0.15 + 'px) rotate(' + scrollY * 0.03 + 'deg)'" width="90"
+      height="78" viewBox="0 0 90 78">
+      <polygon points="45,0 90,78 0,78" fill="#00bf63" opacity="0.15" />
     </svg>
 
     <!-- Large circle - bottom left -->
-    <svg class="shape shape-5" [style.transform]="'translateY(' + scrollY * 0.12 + 'px)'" width="160" height="160" viewBox="0 0 160 160">
-      <circle cx="80" cy="80" r="80" fill="#E8713A" opacity="0.12"/>
+    <svg class="shape shape-5" [style.transform]="'translateY(' + scrollY * 0.12 + 'px)'" width="160" height="160"
+      viewBox="0 0 160 160">
+      <circle cx="80" cy="80" r="80" fill="#E8713A" opacity="0.12" />
     </svg>
 
     <!-- Diamond - center right -->
-    <svg class="shape shape-6" [style.transform]="'translateY(' + scrollY * -0.18 + 'px) rotate(' + scrollY * 0.05 + 'deg)'" width="60" height="60" viewBox="0 0 60 60">
-      <rect width="42" height="42" rx="8" x="9" y="9" transform="rotate(45 30 30)" fill="#7c6bff" opacity="0.2"/>
+    <svg class="shape shape-6"
+      [style.transform]="'translateY(' + scrollY * -0.18 + 'px) rotate(' + scrollY * 0.05 + 'deg)'" width="60"
+      height="60" viewBox="0 0 60 60">
+      <rect width="42" height="42" rx="8" x="9" y="9" transform="rotate(45 30 30)" fill="#7c6bff" opacity="0.2" />
     </svg>
 
     <!-- Small circle - hero area -->
-    <svg class="shape shape-7" [style.transform]="'translateY(' + scrollY * 0.25 + 'px)'" width="35" height="35" viewBox="0 0 35 35">
-      <circle cx="17.5" cy="17.5" r="17.5" fill="#00bf63" opacity="0.25"/>
+    <svg class="shape shape-7" [style.transform]="'translateY(' + scrollY * 0.25 + 'px)'" width="35" height="35"
+      viewBox="0 0 35 35">
+      <circle cx="17.5" cy="17.5" r="17.5" fill="#00bf63" opacity="0.25" />
     </svg>
 
     <!-- Ring - news area -->
-    <svg class="shape shape-8" [style.transform]="'translateY(' + scrollY * -0.08 + 'px)'" width="100" height="100" viewBox="0 0 100 100">
-      <circle cx="50" cy="50" r="42" fill="none" stroke="#E8713A" stroke-width="6" opacity="0.18"/>
+    <svg class="shape shape-8" [style.transform]="'translateY(' + scrollY * -0.08 + 'px)'" width="100" height="100"
+      viewBox="0 0 100 100">
+      <circle cx="50" cy="50" r="42" fill="none" stroke="#E8713A" stroke-width="6" opacity="0.18" />
     </svg>
 
     <!-- Cross/plus - scattered -->
-    <svg class="shape shape-9" [style.transform]="'translateY(' + scrollY * 0.14 + 'px) rotate(' + scrollY * -0.04 + 'deg)'" width="40" height="40" viewBox="0 0 40 40">
-      <rect x="16" y="4" width="8" height="32" rx="4" fill="#7c6bff" opacity="0.2"/>
-      <rect x="4" y="16" width="32" height="8" rx="4" fill="#7c6bff" opacity="0.2"/>
+    <svg class="shape shape-9"
+      [style.transform]="'translateY(' + scrollY * 0.14 + 'px) rotate(' + scrollY * -0.04 + 'deg)'" width="40"
+      height="40" viewBox="0 0 40 40">
+      <rect x="16" y="4" width="8" height="32" rx="4" fill="#7c6bff" opacity="0.2" />
+      <rect x="4" y="16" width="32" height="8" rx="4" fill="#7c6bff" opacity="0.2" />
     </svg>
   </div>
 
   <app-navbar />
 
-  <section class="hero">
-    <div class="hero-content">
-      <h1 class="hero-title">Manage your portfolio with confidence</h1>
+  <section class="landing-hero">
+    <div class="landing-hero-content">
+      <h1 class="landing-hero-title">Manage your portfolio with confidence</h1>
       <p class="hero-subtitle">
         Track, analyze, and optimize your investments in one place. Make smarter financial decisions
         with powerful insights.
       </p>
-      <div class="hero-actions">
+      <div class="landing-hero-actions">
         <button class="hero-cta">Get started</button>
         <a class="hero-link">Learn more</a>
       </div>
@@ -72,11 +84,9 @@
     <p class="news-subtitle">Stay up to date with the latest market insights and updates.</p>
     <div class="news-grid">
       <article class="news-card">
-        <img
-          class="news-card-img"
+        <img class="news-card-img"
           src="https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=600&h=400&fit=crop"
-          alt="Stock market charts"
-        />
+          alt="Stock market charts" />
         <div class="news-card-body">
           <span class="news-tag">Market</span>
           <h3 class="news-card-title">Global markets rally as inflation eases</h3>
@@ -88,11 +98,8 @@
         </div>
       </article>
       <article class="news-card">
-        <img
-          class="news-card-img"
-          src="https://images.unsplash.com/photo-1677442136019-21780ecad995?w=600&h=400&fit=crop"
-          alt="AI technology"
-        />
+        <img class="news-card-img"
+          src="https://images.unsplash.com/photo-1677442136019-21780ecad995?w=600&h=400&fit=crop" alt="AI technology" />
         <div class="news-card-body">
           <span class="news-tag">Technology</span>
           <h3 class="news-card-title">AI-driven portfolio tools reshape investing</h3>
@@ -104,11 +111,9 @@
         </div>
       </article>
       <article class="news-card">
-        <img
-          class="news-card-img"
+        <img class="news-card-img"
           src="https://images.unsplash.com/photo-1518546305927-5a555bb7020d?w=600&h=400&fit=crop"
-          alt="Bitcoin cryptocurrency"
-        />
+          alt="Bitcoin cryptocurrency" />
         <div class="news-card-body">
           <span class="news-tag">Crypto</span>
           <h3 class="news-card-title">Bitcoin surpasses $100K milestone</h3>
@@ -120,11 +125,9 @@
         </div>
       </article>
       <article class="news-card">
-        <img
-          class="news-card-img"
+        <img class="news-card-img"
           src="https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?w=600&h=400&fit=crop"
-          alt="Financial documents"
-        />
+          alt="Financial documents" />
         <div class="news-card-body">
           <span class="news-tag">Bonds</span>
           <h3 class="news-card-title">Treasury yields drop to six-month low</h3>
@@ -135,11 +138,9 @@
         </div>
       </article>
       <article class="news-card">
-        <img
-          class="news-card-img"
+        <img class="news-card-img"
           src="https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=600&h=400&fit=crop"
-          alt="Sustainable energy"
-        />
+          alt="Sustainable energy" />
         <div class="news-card-body">
           <span class="news-tag">ESG</span>
           <h3 class="news-card-title">Sustainable investing hits record inflows</h3>
@@ -151,11 +152,9 @@
         </div>
       </article>
       <article class="news-card">
-        <img
-          class="news-card-img"
+        <img class="news-card-img"
           src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=600&h=400&fit=crop"
-          alt="Commercial buildings"
-        />
+          alt="Commercial buildings" />
         <div class="news-card-body">
           <span class="news-tag">Real Estate</span>
           <h3 class="news-card-title">Commercial real estate shows signs of recovery</h3>
@@ -168,7 +167,7 @@
     </div>
   </section>
 
-  <footer class="footer">
+  <footer class="landing-footer">
     <div class="footer-inner">
       <div class="footer-top">
         <div class="footer-brand">

@@ -1,0 +1,142 @@
+<section class="min-h-screen bg-[#f6f8f6] text-slate-800">
+  <app-navbar />
+  <div class="mx-auto max-w-7xl px-6 py-10 lg:px-10 lg:py-14">
+    <div class="grid items-stretch gap-8 lg:grid-cols-2">
+      <!-- Left panel -->
+      <div class="h-full">
+        <div class="flex h-full flex-col rounded-[30px] border border-slate-200 bg-white p-8 shadow-sm lg:p-10">
+          <div>
+            <div
+              class="inline-flex items-center rounded-full bg-green-50 px-3 py-1 text-sm font-medium text-green-700 ring-1 ring-green-100">
+              Smart investing starts here
+            </div>
+
+            <h1 class="mt-6 max-w-xl text-4xl font-semibold leading-tight text-slate-900 lg:text-5xl">
+              Create your account and start tracking your portfolio with confidence
+            </h1>
+
+            <p class="mt-5 max-w-xl text-lg leading-8 text-slate-600">
+              Organize your investments, monitor your performance, and get a clearer picture of your financial growth in
+              one place.
+            </p>
+          </div>
+
+          <div class="mt-8 flex-1">
+            <div class="flex h-full flex-col rounded-[28px] border border-slate-200 bg-slate-50 p-5">
+              <div class="mb-5 flex items-start justify-between">
+                <div>
+                  <p class="text-sm font-medium text-slate-500">Total equity</p>
+                  <p class="mt-1 text-4xl font-semibold text-slate-900">$0.00</p>
+                </div>
+
+                <div
+                  class="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-500">
+                  New account
+                </div>
+              </div>
+
+              <div class="flex flex-1 flex-col rounded-[24px] bg-[#eef6ee] p-8">
+                <div>
+                  <h2 class="max-w-md text-4xl font-semibold leading-tight text-slate-900">
+                    Your financial growth is just one deposit away
+                  </h2>
+
+                  <p class="mt-5 max-w-md text-base leading-7 text-slate-600">
+                    Making a deposit is quick, easy, and secure. Fund your account to start investing.
+                  </p>
+                </div>
+
+                <div class="mt-auto pt-8">
+                  <div
+                    class="mt-6 inline-flex items-center rounded-full border border-green-200 bg-white px-4 py-2 text-sm font-medium text-green-700">
+                    Account preview
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right panel -->
+      <div class="h-full">
+        <div class="flex h-full flex-col rounded-[30px] border border-slate-200 bg-white p-8 shadow-sm lg:p-10">
+          <div class="mb-8">
+            <h2 class="text-2xl font-semibold text-slate-900">Register</h2>
+            <p class="mt-2 text-sm leading-6 text-slate-500">
+              Enter your details below to create your Moonland account.
+            </p>
+          </div>
+
+          <form class="flex flex-1 flex-col" (ngSubmit)="onSubmit()">
+            <div class="space-y-5">
+              <div class="grid gap-5 sm:grid-cols-2">
+                <div>
+                  <label class="mb-2 block text-sm font-medium text-slate-700">First name</label>
+                  <input type="text" name="firstName" [(ngModel)]="formData.firstName" placeholder="Jason"
+                    class="h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-green-500 focus:ring-2 focus:ring-green-100" />
+                </div>
+
+                <div>
+                  <label class="mb-2 block text-sm font-medium text-slate-700">Last name</label>
+                  <input type="text" name="lastName" [(ngModel)]="formData.lastName" placeholder="Doe"
+                    class="h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-green-500 focus:ring-2 focus:ring-green-100" />
+                </div>
+              </div>
+
+              <div>
+                <label class="mb-2 block text-sm font-medium text-slate-700">Email</label>
+                <input type="email" name="email" [(ngModel)]="formData.email" placeholder="jasondoe21@gmail.com"
+                  class="h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-green-500 focus:ring-2 focus:ring-green-100" />
+              </div>
+
+              <div>
+                <label class="mb-2 block text-sm font-medium text-slate-700">Password</label>
+                <input type="password" name="password" [(ngModel)]="formData.password" placeholder="********"
+                  class="h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-green-500 focus:ring-2 focus:ring-green-100" />
+              </div>
+            </div>
+
+            <div class=" my-9 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+              <p class="text-sm font-semibold text-slate-800">Secure account setup</p>
+              <p class="mt-1 text-sm leading-6 text-slate-500">
+                Your account data is encrypted and protected throughout registration and login.
+              </p>
+            </div>
+            <div class=" pt-4">
+              <button type="submit"
+                class="inline-flex h-12 w-full items-center justify-center rounded-2xl bg-green-600 text-sm font-semibold text-white transition hover:bg-green-700">
+                {{ isSubmitting ? 'Submitting...' : 'Create account' }}
+              </button>
+
+              <p class="mt-6 text-center text-sm text-slate-500">
+                Already have an account?
+                <a [routerLink]="['/login']" class="font-semibold text-green-700 hover:text-green-800">
+                  Log in
+                </a>
+              </p>
+            </div>
+            <div class="mt-6">
+              <div class="my-6 flex items-center gap-3">
+                <div class="h-px flex-1 bg-slate-200"></div>
+                <span class="text-xs font-medium uppercase tracking-wide text-slate-400">or continue with</span>
+                <div class="h-px flex-1 bg-slate-200"></div>
+              </div>
+
+              <div class="grid grid-cols-2 gap-3">
+                <button type="button"
+                  class="h-11 rounded-2xl border border-slate-200 bg-white text-sm font-medium text-slate-700 hover:bg-slate-50">
+                  Google
+                </button>
+                <button type="button"
+                  class="h-11 rounded-2xl border border-slate-200 bg-white text-sm font-medium text-slate-700 hover:bg-slate-50">
+                  Apple
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
