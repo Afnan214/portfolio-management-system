@@ -1,0 +1,48 @@
+<nav class="navbar">
+  <div class="navbar-inner">
+    <!-- Logo -->
+    <div class="navbar-logo">
+      <img src="assets/logo.png" alt="Logo" class="logo-img" />
+      <span class="logo-text">Moonland</span>
+    </div>
+
+    <!-- Navigation links (desktop) -->
+    <ul class="navbar-links">
+      <li class="nav-item has-dropdown">
+        Services
+        <lucide-icon [img]="ChevronDown" [size]="16"></lucide-icon>
+      </li>
+      <li class="nav-item">Pricing</li>
+      <li class="nav-item">About Us</li>
+    </ul>
+
+    <!-- Right side actions (desktop) -->
+    <div class="navbar-actions">
+      <a class="login-link">Log in</a>
+      <button class="get-started-btn">Get started</button>
+    </div>
+
+    <!-- Mobile menu button -->
+    <button class="mobile-menu-btn" (click)="toggleMobileMenu()">
+      <lucide-icon [img]="mobileMenuOpen ? X : Menu" [size]="24"></lucide-icon>
+    </button>
+  </div>
+
+  <!-- Mobile menu -->
+  @if (mobileMenuOpen) {
+    <div class="mobile-menu">
+      <ul class="mobile-links">
+        <li class="mobile-nav-item has-dropdown">
+          Services
+          <lucide-icon [img]="ChevronDown" [size]="16"></lucide-icon>
+        </li>
+        <li class="mobile-nav-item">Pricing</li>
+        <li class="mobile-nav-item">About Us</li>
+      </ul>
+      <div class="mobile-actions">
+        <a class="login-link">Log in</a>
+        <button class="get-started-btn mobile-cta">Get started</button>
+      </div>
+    </div>
+  }
+</nav>
