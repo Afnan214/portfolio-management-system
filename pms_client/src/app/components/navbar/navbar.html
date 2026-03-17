@@ -1,9 +1,11 @@
-<nav class="navbar">
+<nav class="site-navbar">
   <div class="navbar-inner">
     <!-- Logo -->
     <div class="navbar-logo">
-      <img src="assets/logo.png" alt="Logo" class="logo-img" />
-      <span class="logo-text">Moonland</span>
+      <a class="flex space-x-2 items-center" routerLink="/">
+        <img src="assets/logo.png" alt="Logo" class="logo-img" />
+        <span class="logo-text">Moonland</span>
+      </a>
     </div>
 
     <!-- Navigation links (desktop) -->
@@ -17,10 +19,16 @@
     </ul>
 
     <!-- Right side actions (desktop) -->
+    @if(this.isLoggedIn){
+    <a class="login-link" (click)="logout()" [routerLink]="['/login']">Logout</a>
+    }
+    @else {
+
     <div class="navbar-actions">
-      <a class="login-link">Log in</a>
-      <button class="get-started-btn">Get started</button>
+      <a class="login-link" [routerLink]="['/login']">Log in</a>
+      <button class="get-started-btn" [routerLink]="['/register']">Get started</button>
     </div>
+    }
 
     <!-- Mobile menu button -->
     <button class="mobile-menu-btn" (click)="toggleMobileMenu()">
@@ -30,19 +38,20 @@
 
   <!-- Mobile menu -->
   @if (mobileMenuOpen) {
-    <div class="mobile-menu">
-      <ul class="mobile-links">
-        <li class="mobile-nav-item has-dropdown">
-          Services
-          <lucide-icon [img]="ChevronDown" [size]="16"></lucide-icon>
-        </li>
-        <li class="mobile-nav-item">Pricing</li>
-        <li class="mobile-nav-item">About Us</li>
-      </ul>
-      <div class="mobile-actions">
-        <a class="login-link">Log in</a>
-        <button class="get-started-btn mobile-cta">Get started</button>
-      </div>
+  <div class="mobile-menu">
+    <ul class="mobile-links">
+      <li class="mobile-nav-item has-dropdown">
+        Services
+        <lucide-icon [img]="ChevronDown" [size]="16"></lucide-icon>
+      </li>
+      <li class="mobile-nav-item">Pricing</li>
+      <li class="mobile-nav-item">About Us</li>
+    </ul>
+    <div class="mobile-actions">
+      <a class="login-link" [routerLink]="['/login']">Log in</a>
+      <button class="get-started-btn mobile-cta" [routerLink]="['/register']">Get
+        started</button>
     </div>
+  </div>
   }
 </nav>
