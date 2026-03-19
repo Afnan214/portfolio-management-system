@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, inject } from '@angular/core';
 import { ChevronDown, LucideAngularModule, Menu, X } from 'lucide-angular';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../auth/auth-service';
@@ -15,7 +15,7 @@ import { AsyncPipe } from '@angular/common';
 export class Navbar {
   private authService = inject(AuthService);
   private router = inject(Router);
-
+  private cdr = inject(ChangeDetectorRef);
   readonly ChevronDown = ChevronDown;
   readonly Menu = Menu;
   readonly X = X;
@@ -27,10 +27,12 @@ export class Navbar {
   logout() {
     this.authService.logout().subscribe({
       next: () => {
+        this.cdr.detectChanges();
         this.router.navigate(['/login']);
       },
       error: () => {
         this.authService.clearUser();
+        this.cdr.detectChanges();
         this.router.navigate(['/login']);
       },
     });
