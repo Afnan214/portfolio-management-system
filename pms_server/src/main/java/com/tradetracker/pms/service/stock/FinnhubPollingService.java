@@ -6,6 +6,7 @@ import com.tradetracker.pms.store.StockStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
@@ -29,9 +30,11 @@ public class FinnhubPollingService {
 
     private final RestClient restClient;
     private final StockStore stockStore;
+    private final SimpMessagingTemplate messagingTemplate;
 
-    public FinnhubPollingService(@Value("${finnhub.api.key}") String apiKey, StockStore stockStore) {
+    public FinnhubPollingService(@Value("${finnhub.api.key}") String apiKey, StockStore stockStore, SimpMessagingTemplate messagingTemplate) {
         this.stockStore = stockStore;
+        this.messagingTemplate = messagingTemplate;
         this.restClient = RestClient.builder()
                 .baseUrl("https://finnhub.io/api/v1")
                 .defaultHeader("X-Finnhub-Token", apiKey)
@@ -51,6 +54,8 @@ public class FinnhubPollingService {
         }
 
         log.debug("Polling complete. {} quotes in store.", stockStore.size());
+
+        messagingTemplate.convertAndSend("/topic/stock-quotes", stockStore.getAll());
     }
 
     private void fetchQuote(String symbol) {
