@@ -10,19 +10,19 @@ import java.util.Optional;
 @Service
 public class StockServiceImpl implements StockService {
 
-    private final StockStore stockStore;
+  private final StockStore stockStore;
 
-    public StockServiceImpl(StockStore stockStore) {
-        this.stockStore = stockStore;
-    }
+  public StockServiceImpl(StockStore stockStore) {
+    this.stockStore = stockStore;
+  }
 
-    @Override
-    public List<StockQuote> getAllQuotes() {
-        return stockStore.getAll();
-    }
+  @Override
+  public List<StockQuote> getAllQuotes() {
+    return stockStore.getAll();
+  }
 
-    @Override
-    public Optional<StockQuote> getQuote(String symbol) {
-        return stockStore.get(symbol);
-    }
+  @Override
+  public Optional<StockQuote> getQuote(String symbol) {
+    return stockStore.get(symbol);
+  }
 }
