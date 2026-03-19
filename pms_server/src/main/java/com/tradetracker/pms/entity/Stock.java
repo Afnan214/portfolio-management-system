@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Data
-@Table(name = "stocks")
+@Table(name = "stock")
 public class Stock {
 
   @Id
@@ -27,14 +27,6 @@ public class Stock {
 
   @Column(name = "sector", length = 255)
   private String sector;
-
-  @CreationTimestamp
-  @Column(name = "created_at", updatable = false)
-  private LocalDateTime createdAt;
-
-  @UpdateTimestamp
-  @Column(name = "updated_at")
-  private LocalDateTime updatedAt;
 
   public Stock() {
   }

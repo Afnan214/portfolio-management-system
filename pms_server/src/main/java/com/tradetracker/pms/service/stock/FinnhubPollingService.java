@@ -41,13 +41,18 @@ public class FinnhubPollingService {
                 .build();
     }
 
-    @Scheduled(fixedRate = 30000)
+    @Scheduled(fixedRate = 60000)
     public void pollStockQuotes() {
         log.debug("Polling Finnhub for {} stock quotes...", TOP_30_SYMBOLS.size());
 
         for (String symbol : TOP_30_SYMBOLS) {
             try {
                 fetchQuote(symbol);
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                log.warn("Polling interrupted");
+                return;
             } catch (Exception e) {
                 log.warn("Failed to fetch quote for {}: {}", symbol, e.getMessage());
             }
