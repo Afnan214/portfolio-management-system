@@ -1,7 +1,8 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, BehaviorSubject, tap, catchError, of } from 'rxjs';
+import { Observable, BehaviorSubject, tap, catchError, of, map } from 'rxjs';
 import { RegisterRequest } from './register-request';
+import { Router } from '@angular/router';
 
 export interface LoginRequest {
   email: string;
@@ -25,7 +26,7 @@ export interface CurrentUser {
 })
 export class AuthService {
   private http = inject(HttpClient);
-
+  private router = inject(Router);
   private readonly apiUrl = 'http://localhost:8080/api/auth';
 
   private currentUserSubject = new BehaviorSubject<CurrentUser | null>(null);
@@ -89,6 +90,7 @@ export class AuthService {
       .pipe(
         tap(() => {
           this.currentUserSubject.next(null);
+          console.log(this.getCurrentUserSnapshot());
         }),
       );
   }
