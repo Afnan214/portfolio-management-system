@@ -1,0 +1,17 @@
+<section class="min-h-screen bg-base-100 p-6 text-base-content">
+  @if (isLoading) {
+  <p>Loading portfolio...</p>
+  } @else if (errorMessage) {
+  <p class="text-red-600">{{ errorMessage }}</p>
+  } @else if (portfolio) {
+  <div class="max-w-3xl mx-auto rounded-box border border-base-300 bg-base-100 p-6 shadow-sm">
+    <h1 class="text-2xl font-semibold">{{ portfolio.name }}</h1>
+
+    <div class="mt-4 space-y-2">
+      <p><strong>ID:</strong> {{ portfolio.id }}</p>
+      <p><strong>Cash Balance:</strong> {{ portfolio.cashBalance }}</p>
+      <p><strong>Default:</strong> {{ portfolio.isDefault ? 'Yes' : 'No' }}</p>
+    </div>
+  </div>
+  }
+</section>

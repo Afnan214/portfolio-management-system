@@ -1,58 +1,110 @@
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { inject, Injectable } from '@angular/core';
+import { Observable, BehaviorSubject, tap, catchError, of } from 'rxjs';
 import { RegisterRequest } from './register-request';
-import { Observable, tap } from 'rxjs';
-import { AuthResponse } from './auth-response';
-import { LoginRequest } from './login-request';
+
+export interface LoginRequest {
+  email: string;
+  password: string;
+}
+
+export interface AuthResponse {
+  id: number;
+  email: string;
+  message: string;
+}
+
+export interface CurrentUser {
+  id: number;
+  email: string;
+  message?: string;
+}
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
   private http = inject(HttpClient);
-  private baseUrl = 'http://localhost:8080/api/auth';
-  private tokenKey = 'access_token';
 
-  register(request: RegisterRequest): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.baseUrl}/register`, request).pipe(
-      tap((response) => {
-        this.saveToken(response.accessToken);
-      }),
-    );
-  }
+  private readonly apiUrl = 'http://localhost:8080/api/auth';
+
+  private currentUserSubject = new BehaviorSubject<CurrentUser | null>(null);
+  currentUser$ = this.currentUserSubject.asObservable();
+
   login(payload: LoginRequest): Observable<AuthResponse> {
-    return this.http.post(`${this.baseUrl}/login`, payload).pipe(
-      tap((response: any) => {
-        if (response?.accessToken) {
-          this.saveToken(response.accessToken);
-        }
-      }),
-    );
+    return this.http
+      .post<AuthResponse>(`${this.apiUrl}/login`, payload, {
+        withCredentials: true,
+      })
+      .pipe(
+        tap((response) => {
+          this.currentUserSubject.next({
+            id: response.id,
+            email: response.email,
+          });
+        }),
+      );
   }
-  saveToken(token: string): void {
-    localStorage.setItem(this.tokenKey, token);
+
+  register(payload: RegisterRequest): Observable<AuthResponse> {
+    return this.http
+      .post<AuthResponse>(`${this.apiUrl}/register`, payload, {
+        withCredentials: true,
+      })
+      .pipe(
+        tap((response) => {
+          this.currentUserSubject.next({
+            id: response.id,
+            email: response.email,
+          });
+        }),
+      );
   }
-  isAuthenticated(): boolean {
-    return !!localStorage.getItem(this.tokenKey);
+
+  getMe(): Observable<CurrentUser | null> {
+    return this.http
+      .get<CurrentUser>(`${this.apiUrl}/me`, {
+        withCredentials: true,
+      })
+      .pipe(
+        tap((user) => {
+          this.currentUserSubject.next(user);
+        }),
+        catchError(() => {
+          this.currentUserSubject.next(null);
+          return of(null);
+        }),
+      );
   }
-  getToken(): string | null {
-    return localStorage.getItem(this.tokenKey);
+
+  logout(): Observable<void> {
+    return this.http
+      .post<void>(
+        `${this.apiUrl}/logout`,
+        {},
+        {
+          withCredentials: true,
+        },
+      )
+      .pipe(
+        tap(() => {
+          this.currentUserSubject.next(null);
+        }),
+      );
   }
-  logout(): void {
-    this.http.get(`${this.baseUrl}/logout`).pipe(
-      tap((response: any) => {
-        if (response?.accessToken) {
-          this.saveToken(response.accessToken);
-        }
-      }),
-    );
-    localStorage.removeItem(this.tokenKey);
-  }
-  clearToken(): void {
-    localStorage.removeItem(this.tokenKey);
+
+  getCurrentUserSnapshot(): CurrentUser | null {
+    return this.currentUserSubject.value;
   }
 
   isLoggedIn(): boolean {
-    return !!this.getToken();
+    return this.currentUserSubject.value !== null;
+  }
+  hasCurrentUser(): boolean {
+    return this.currentUserSubject.value !== null;
+  }
+
+  clearUser(): void {
+    this.currentUserSubject.next(null);
   }
 }

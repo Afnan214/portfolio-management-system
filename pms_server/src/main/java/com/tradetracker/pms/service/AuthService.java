@@ -2,13 +2,11 @@ package com.tradetracker.pms.service;
 
 import com.tradetracker.pms.dto.request.auth.CreateUserRequest;
 import com.tradetracker.pms.dto.request.auth.LoginRequest;
-import com.tradetracker.pms.dto.response.auth.AuthResponse;
 import com.tradetracker.pms.entity.User;
 import com.tradetracker.pms.repository.UserRepository;
 import com.tradetracker.pms.security.JwtService;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -32,7 +30,7 @@ public class AuthService {
         this.jwtService = jwtService;
     }
 
-    public AuthResponse register(CreateUserRequest request) {
+    public AuthResult register(CreateUserRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new RuntimeException("Email already in use");
         }
@@ -43,19 +41,14 @@ public class AuthService {
         user.setEmail(request.getEmail());
         user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
 
-        userRepository.save(user);
+        User savedUser = userRepository.save(user);
 
-        UserDetails userDetails = org.springframework.security.core.userdetails.User
-                .withUsername(user.getEmail())
-                .password(user.getPasswordHash())
-                .authorities("USER")
-                .build();
+        String token = jwtService.generateToken(savedUser);
 
-        String token = jwtService.generateToken(userDetails);
-        return new AuthResponse(token);
+        return new AuthResult(savedUser, token);
     }
 
-    public AuthResponse login(LoginRequest request) {
+    public AuthResult login(LoginRequest request) {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         request.getEmail(),
@@ -66,14 +59,10 @@ public class AuthService {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        UserDetails userDetails = org.springframework.security.core.userdetails.User
-                .withUsername(user.getEmail())
-                .password(user.getPasswordHash())
-                .authorities("USER")
-                .build();
+        String token = jwtService.generateToken(user);
 
-        String token = jwtService.generateToken(userDetails);
-        return new AuthResponse(token);
+        return new AuthResult(user, token);
     }
-    
+
+    public record AuthResult(User user, String token) {}
 }

@@ -18,7 +18,7 @@ export class Navbar {
   readonly X = X;
   mobileMenuOpen = false;
 
-  isLoggedIn = this.authService.isAuthenticated();
+  isLoggedIn = this.authService.isLoggedIn() || this.authService.getMe();
 
   logout() {
     this.authService.logout();

@@ -1,0 +1,54 @@
+<section class="min-h-screen bg-[#f6f8f6] text-slate-800">
+  <div class="flex min-h-screen items-center justify-center px-4">
+    <form class="fieldset bg-base-200 border-base-300 rounded-box w-full max-w-md border p-6"
+      [formGroup]="portfolioForm" (ngSubmit)="onSubmit()">
+      <h2 class="mb-2 text-xl font-semibold">Create Portfolio</h2>
+      <p class="mb-4 text-sm text-slate-600">
+        Add a portfolio name, starting cash balance, and choose whether it should be your default portfolio.
+      </p>
+
+      <label class="fieldset">
+        <span class="label">Portfolio Name</span>
+        <input type="text" class="input w-full" placeholder="My Portfolio" formControlName="name" />
+        @if (portfolioForm.controls.name.touched && portfolioForm.controls.name.invalid) {
+        <span class="text-sm text-red-600 mt-1">
+          Portfolio name is required.
+        </span>
+        }
+      </label>
+
+      <label class="fieldset mt-3">
+        <span class="label">Starting Cash Balance</span>
+        <input type="number" class="input w-full" placeholder="10000" min="0" step="0.01"
+          formControlName="cashBalance" />
+        @if (portfolioForm.controls.cashBalance.touched && portfolioForm.controls.cashBalance.invalid) {
+        <span class="text-sm text-red-600 mt-1">
+          Cash balance must be 0 or greater.
+        </span>
+        }
+      </label>
+
+      <label class="label cursor-pointer justify-start gap-3 mt-4">
+        <input type="checkbox" class="checkbox" formControlName="isDefault" />
+        <span class="label-text">Set as default portfolio</span>
+      </label>
+
+      @if (errorMessage) {
+      <p class="mt-3 text-sm text-red-600">{{ errorMessage }}</p>
+      }
+
+      @if (successMessage) {
+      <p class="mt-3 text-sm text-green-600">{{ successMessage }}</p>
+      }
+
+      <button class="btn btn-neutral mt-5" type="submit" [disabled]="isSubmitting">
+        {{ isSubmitting ? 'Creating...' : 'Create Portfolio' }}
+      </button>
+
+      <button class="btn btn-ghost mt-2" type="button"
+        (click)="portfolioForm.reset({ name: '', cashBalance: 0, isDefault: false })" [disabled]="isSubmitting">
+        Reset
+      </button>
+    </form>
+  </div>
+</section>

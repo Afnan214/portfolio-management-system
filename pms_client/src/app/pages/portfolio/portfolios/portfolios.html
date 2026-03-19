@@ -1,0 +1,50 @@
+<section class="min-h-screen bg-[#f6f8f6] px-6 py-8 text-slate-800">
+  <div class="mx-auto max-w-5xl">
+    <div class="mb-6 flex items-center justify-between">
+      <div>
+        <h1 class="text-2xl font-semibold">My Portfolios</h1>
+        <p class="mt-1 text-sm text-slate-600">
+          View and manage all of your portfolios.
+        </p>
+      </div>
+
+      <a routerLink="/portfolios/create" class="btn btn-neutral">
+        Create Portfolio
+      </a>
+    </div>
+
+    @if (isLoading) {
+    <p>Loading portfolios...</p>
+    } @else if (errorMessage) {
+    <p class="text-red-600">{{ errorMessage }}</p>
+    } @else if (portfolios.length === 0) {
+    <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+      <p class="text-slate-600">You do not have any portfolios yet.</p>
+    </div>
+    } @else {
+    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      @for (portfolio of portfolios; track portfolio.id) {
+      <a class="block rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition hover:shadow-md"
+        [routerLink]="['/portfolios', portfolio.id]">
+        <div class="flex items-start justify-between gap-3">
+          <h2 class="text-lg font-semibold">{{ portfolio.name }}</h2>
+
+          @if (portfolio.isDefault) {
+          <span class="rounded-full bg-slate-100 px-2 py-1 text-xs font-medium text-slate-700">
+            Default
+          </span>
+          }
+        </div>
+
+        <div class="mt-4">
+          <p class="text-sm text-slate-500">Cash Balance</p>
+          <p class="text-xl font-semibold">
+            {{ portfolio.cashBalance | currency }}
+          </p>
+        </div>
+      </a>
+      }
+    </div>
+    }
+  </div>
+</section>
