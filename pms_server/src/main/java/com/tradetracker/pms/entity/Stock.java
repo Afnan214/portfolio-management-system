@@ -16,22 +16,24 @@ public class Stock {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  @Column(nullable = false, unique = true, length = 10)
+  @Column(name = "symbol", nullable = false, unique = true, length = 10)
   private String symbol;
 
-  @Column(nullable = false, length = 255)
+  @Column(name = "company_name", nullable = false, length = 255)
   private String companyName;
 
-  @Column(length = 255)
+  @Column(name = "industry", length = 255)
   private String industry;
 
-  @Column(length = 255)
+  @Column(name = "sector", length = 255)
   private String sector;
 
   @CreationTimestamp
+  @Column(name = "created_at", updatable = false)
   private LocalDateTime createdAt;
 
   @UpdateTimestamp
+  @Column(name = "updated_at")
   private LocalDateTime updatedAt;
 
   public Stock() {
