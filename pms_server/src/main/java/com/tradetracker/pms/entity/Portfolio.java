@@ -24,7 +24,7 @@ public class Portfolio {
     @Column(nullable = false, length=100)
     private String name;
 
-    @Column(nullable = false)
+    @Column(nullable = false,  precision = 10, scale = 2)
     private BigDecimal cashBalance = new BigDecimal("10000.00");
 
     // addition of every stock (quantity*currentMarketPrice) in this portfolio

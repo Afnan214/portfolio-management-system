@@ -1,16 +1,16 @@
-package com.tradetracker.pms.service;
+package com.tradetracker.pms.service.portfolio;
 
 import com.tradetracker.pms.dto.request.portfolio.CreatePortfolioRequest;
 import com.tradetracker.pms.dto.request.portfolio.UpdatePortfolioRequest;
+import com.tradetracker.pms.dto.request.portfolio.trade.CreateTradeRequest;
 import com.tradetracker.pms.dto.response.portfolio.PortfolioResponse;
 import com.tradetracker.pms.entity.Portfolio;
+import com.tradetracker.pms.entity.Trade;
 import com.tradetracker.pms.entity.User;
 import com.tradetracker.pms.repository.PortfolioRepository;
 import com.tradetracker.pms.repository.UserRepository;
-import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 
-import javax.sound.sampled.Port;
 import java.util.List;
 
 
@@ -109,5 +109,6 @@ public class PortfolioService {
         portfolioRepository.delete(portfolio);
 
     }
+
 
 }
