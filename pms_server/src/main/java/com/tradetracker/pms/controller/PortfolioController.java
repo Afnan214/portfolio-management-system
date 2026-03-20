@@ -43,8 +43,8 @@ public class PortfolioController {
         return ResponseEntity.ok(tradeService.getTradesByPortfolio(id));
     }
 
-    @GetMapping("/{portfolioid}/trades/{tradeid}")
-    public ResponseEntity<Trade> getTradeById(@PathVariable Long portfolioid, @PathVariable Long tradeid){
+    @GetMapping("/{id}/trades/{tradeid}")
+    public ResponseEntity<Trade> getTradeById(@PathVariable Long id, @PathVariable Long tradeid){
         return ResponseEntity.ok(tradeService.getTradeById(tradeid));
     }
 

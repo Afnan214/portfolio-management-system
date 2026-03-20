@@ -1,17 +1,75 @@
 <section class="min-h-screen bg-base-100 p-6 text-base-content">
-  @if (isLoading) {
-  <p>Loading portfolio...</p>
-  } @else if (errorMessage) {
-  <p class="text-red-600">{{ errorMessage }}</p>
-  } @else if (portfolio) {
-  <div class="max-w-3xl mx-auto rounded-box border border-base-300 bg-base-100 p-6 shadow-sm">
-    <h1 class="text-2xl font-semibold">{{ portfolio.name }}</h1>
+  <div class="flex flex-wrap">
+    <!-- Portfolio Details -->
+    <div class="grow-4 ">
 
-    <div class="mt-4 space-y-2">
-      <p><strong>ID:</strong> {{ portfolio.id }}</p>
-      <p><strong>Cash Balance:</strong> {{ portfolio.cashBalance }}</p>
-      <p><strong>Default:</strong> {{ portfolio.isDefault ? 'Yes' : 'No' }}</p>
+      @if (isLoading) {
+      <p>Loading portfolio...</p>
+      } @else if (errorMessage) {
+      <p class="text-red-600">{{ errorMessage }}</p>
+      } @else if (portfolio) {
+      <div class="max-w-3xl mx-auto rounded-box border border-base-300 bg-base-100 p-6 shadow-sm">
+        <h1 class="text-2xl font-semibold">{{ portfolio.name }}</h1>
+
+        <div class="mt-4 space-y-2">
+          <p><strong>ID:</strong> {{ portfolio.id }}</p>
+          <p><strong>Cash Balance:</strong> {{ portfolio.cashBalance }}</p>
+          <p><strong>Default:</strong> {{ portfolio.isDefault ? 'Yes' : 'No' }}</p>
+        </div>
+      </div>
+      }
+    </div>
+    <!-- Quick Trade -->
+    <div class="grow-3 mx-8">
+      <div class="card flex-1 bg-white shadow-sm">
+        <div class="card-body p-4">
+          <div class="flex items-center gap-2">
+            <lucide-icon [img]="ArrowRightLeft" [size]="18" class="text-green-500"></lucide-icon>
+            <h2 class="card-title text-lg">Quick Trade</h2>
+          </div>
+
+          <!-- Buy / Sell toggle -->
+          <div class="mt-3 flex rounded-lg bg-slate-100 p-1">
+            <button (click)="tradeAction = 'buy'" class="flex-1 rounded-md py-1.5 text-sm font-medium transition-colors"
+              [class.bg-green-500]="tradeAction === 'buy'" [class.text-white]="tradeAction === 'buy'"
+              [class.text-slate-500]="tradeAction !== 'buy'">
+              Buy
+            </button>
+            <button (click)="tradeAction = 'sell'"
+              class="flex-1 rounded-md py-1.5 text-sm font-medium transition-colors"
+              [class.bg-red-500]="tradeAction === 'sell'" [class.text-white]="tradeAction === 'sell'"
+              [class.text-slate-500]="tradeAction !== 'sell'">
+              Sell
+            </button>
+          </div>
+
+          <!-- Symbol input -->
+          <div class="mt-3">
+            <label class="text-xs font-medium text-slate-500">Symbol</label>
+            <div class="relative mt-1">
+              <lucide-icon [img]="Search" [size]="14"
+                class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></lucide-icon>
+              <input type="text" [(ngModel)]="tradeSymbol" placeholder="e.g. AAPL"
+                class="input input-bordered input-sm w-full pl-8 uppercase" />
+            </div>
+          </div>
+
+          <!-- Quantity input -->
+          <div class="mt-2">
+            <label class="text-xs font-medium text-slate-500">Quantity</label>
+            <input type="number" [(ngModel)]="tradeQuantity" placeholder="0" min="1"
+              class="input input-bordered input-sm mt-1 w-full" />
+          </div>
+
+          <!-- Place Order button -->
+          <button [disabled]="!tradeSymbol || !tradeQuantity || tradeQuantity <= 0"
+            class="btn btn-sm mt-3 w-full rounded-lg border-none text-white disabled:opacity-50"
+            [class.bg-green-500]="tradeAction === 'buy'" [class.hover:bg-green-600]="tradeAction === 'buy'"
+            [class.bg-red-500]="tradeAction === 'sell'" [class.hover:bg-red-600]="tradeAction === 'sell'">
+            {{ tradeAction === 'buy' ? 'Buy' : 'Sell' }} {{ tradeSymbol || '...' }}
+          </button>
+        </div>
+      </div>
     </div>
   </div>
-  }
 </section>

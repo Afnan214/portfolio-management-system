@@ -12,6 +12,7 @@ import {
   ChevronLeft,
   ChevronRight,
 } from 'lucide-angular';
+import { SidebarService } from './sidebar-service';
 
 @Component({
   selector: 'app-sidebar',
@@ -29,18 +30,19 @@ export class Sidebar {
   Settings = Settings;
   ChevronLeft = ChevronLeft;
   ChevronRight = ChevronRight;
+  constructor(public sidebarService: SidebarService) { }
 
   @Output() collapsedChange = new EventEmitter<boolean>();
 
   collapsed = false;
 
   navItems = [
-    { label: 'Dashboard', icon: this.LayoutDashboard, route: '/dashboard' },
-    { label: 'Portfolio', icon: this.Briefcase, route: '/portfolios' },
-    { label: 'Market Overview', icon: this.TrendingUp, route: '/market' },
-    { label: 'User Profile', icon: this.User, route: '/profile' },
-    { label: 'Help Center', icon: this.HelpCircle, route: '/help' },
-    { label: 'Settings', icon: this.Settings, route: '/settings' },
+    { label: 'Dashboard', icon: this.LayoutDashboard, route: '/console/dashboard' },
+    { label: 'Portfolio', icon: this.Briefcase, route: '/console/portfolios' },
+    { label: 'Market Overview', icon: this.TrendingUp, route: '/console/market' },
+    { label: 'User Profile', icon: this.User, route: '/console/profile' },
+    { label: 'Help Center', icon: this.HelpCircle, route: '/console/help' },
+    { label: 'Settings', icon: this.Settings, route: '/console/settings' },
   ];
 
   toggleCollapse() {

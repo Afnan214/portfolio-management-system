@@ -51,7 +51,7 @@ export class Login {
             password: '',
           };
 
-          this.router.navigate(['/dashboard']);
+          this.router.navigate(['/console/dashboard']);
         },
         error: (error) => {
           console.log('Login failed', error);

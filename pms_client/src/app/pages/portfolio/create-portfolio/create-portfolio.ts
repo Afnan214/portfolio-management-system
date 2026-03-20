@@ -39,14 +39,13 @@ export class CreatePortfolio {
     this.portfolioService.createPortfolio(this.portfolioForm.getRawValue()).subscribe({
       next: (portfolio) => {
         this.isSubmitting = false;
-        this.router.navigate(['/portfolios', portfolio.id]);
+        this.router.navigate(['console/portfolios', portfolio.id]);
         this.successMessage = 'Portfolio created successfully.';
         this.portfolioForm.reset({
           name: '',
           cashBalance: 0,
           isDefault: false,
         });
-        console.log(portfolio);
       },
       error: (err) => {
         this.isSubmitting = false;

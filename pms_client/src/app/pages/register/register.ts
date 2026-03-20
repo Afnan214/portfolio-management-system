@@ -40,7 +40,7 @@ export class Register {
         };
         this.isSubmitting = false;
 
-        this.router.navigate(['/dashboard']);
+        this.router.navigate(['/console/dashboard']);
       },
       error: (error) => {
         console.log('Register failed', error);

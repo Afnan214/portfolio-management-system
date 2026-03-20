@@ -1,0 +1,12 @@
+<!-- console-layout.component.html -->
+<div class="flex h-screen overflow-hidden bg-gray-100">
+
+    <!-- Sidebar will shrink from w-64 to w-20 -->
+    <app-sidebar></app-sidebar>
+
+    <!-- This main area will automatically expand to fill the 44px of new space -->
+    <main class="flex-1 overflow-y-auto p-6 transition-all duration-300">
+        <router-outlet></router-outlet>
+    </main>
+
+</div>
