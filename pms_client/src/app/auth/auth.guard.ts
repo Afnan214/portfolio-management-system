@@ -4,16 +4,19 @@ import { AuthService } from './auth-service';
 import { map } from 'rxjs/operators';
 
 export const authGuard: CanActivateFn = () => {
-  const authService = inject(AuthService);
-  const router = inject(Router);
+  // TODO: restore auth check
+  return true;
 
-  if (authService.hasCurrentUser()) {
-    return true;
-  }
+  // const authService = inject(AuthService);
+  // const router = inject(Router);
 
-  return authService.getMe().pipe(
-    map((user) => {
-      return user ? true : router.createUrlTree(['/login']);
-    }),
-  );
+  // if (authService.hasCurrentUser()) {
+  //   return true;
+  // }
+
+  // return authService.getMe().pipe(
+  //   map((user) => {
+  //     return user ? true : router.createUrlTree(['/login']);
+  //   }),
+  // );
 };
