@@ -22,11 +22,60 @@ public class Holding {
     @Column(nullable = false)
     private BigDecimal quantity;
 
+
     @Column(nullable = false)
     private BigDecimal averageCostBasis;
 
     @Column(nullable = false)
-    private BigDecimal totalCostBasis;
+    private BigDecimal totalCostBasis; // total amount invested for this stock
 
 
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Stock getStock() {
+        return stock;
+    }
+
+    public void setStock(Stock stock) {
+        this.stock = stock;
+    }
+
+    public Portfolio getPortfolio() {
+        return portfolio;
+    }
+
+    public void setPortfolio(Portfolio portfolio) {
+        this.portfolio = portfolio;
+    }
+
+    public BigDecimal getQuantity() {
+        return quantity;
+    }
+
+    public void setQuantity(BigDecimal quantity) {
+        this.quantity = quantity;
+    }
+
+    public BigDecimal getAverageCostBasis() {
+        return averageCostBasis;
+    }
+
+    public void setAverageCostBasis(BigDecimal averageCostBasis) {
+        this.averageCostBasis = averageCostBasis;
+    }
+
+    public BigDecimal getTotalCostBasis() {
+        return totalCostBasis;
+    }
+
+    public void setTotalCostBasis(BigDecimal totalCostBasis) {
+        this.totalCostBasis = totalCostBasis;
+    }
 }

@@ -78,7 +78,7 @@ public class PortfolioController {
         return ResponseEntity.ok(tradeService.getTradeById(tradeid));
     }
 
-    @PostMapping("{id}/trades")
+    @PostMapping("/{id}/trades")
     public ResponseEntity<Trade> createTrade(@PathVariable Long id, @Valid @RequestBody CreateTradeRequest createTradeRequest){
         return ResponseEntity.status(HttpStatus.CREATED).body(tradeService.createTrade(id, createTradeRequest));
     }
@@ -86,8 +86,9 @@ public class PortfolioController {
     //======================================================================================
     //Holdings section
     @GetMapping("/{id}/holdings")
-public ResponseEntity<List<Holding>> getHoldingsByPortfolio(@PathVariable Long id){
+    public ResponseEntity<List<Holding>> getHoldingsByPortfolio(@PathVariable Long id){
         return ResponseEntity.ok(List.of(new Holding()));
     }
+
 
 }

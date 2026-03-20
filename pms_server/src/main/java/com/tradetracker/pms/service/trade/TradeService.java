@@ -5,10 +5,7 @@ import com.tradetracker.pms.dto.request.portfolio.UpdatePortfolioRequest;
 import com.tradetracker.pms.dto.request.portfolio.trade.CreateTradeRequest;
 import com.tradetracker.pms.dto.response.portfolio.PortfolioResponse;
 import com.tradetracker.pms.entity.*;
-import com.tradetracker.pms.repository.PortfolioRepository;
-import com.tradetracker.pms.repository.StockRepository;
-import com.tradetracker.pms.repository.TradeRepository;
-import com.tradetracker.pms.repository.UserRepository;
+import com.tradetracker.pms.repository.*;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
@@ -16,6 +13,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 
 @Service
@@ -24,6 +22,7 @@ public class TradeService{
     UserRepository userRepository;
     TradeRepository tradeRepository;
     StockRepository stockRepository;
+    HoldingRepository holdingRepository;
     public TradeService(PortfolioRepository portfolioRepository, UserRepository userRepository, TradeRepository tradeRepository, StockRepository stockRepository) {
         this.portfolioRepository = portfolioRepository;
         this.userRepository = userRepository;
@@ -49,6 +48,18 @@ public class TradeService{
 
         BigDecimal totalAmount = createTradeRequest.getQuantity()
                 .multiply(createTradeRequest.getPricePerShare());
+
+
+        //need to update Holding when a trade is made. If holding for this stock doesn't exist, we must create a new holding
+        Holding holding =  holdingRepository.findByStockIdAndPortfolioId(stock.getId(), portfolio.getId());
+        if(holding == null){
+            holding = new Holding();
+            holding.setStock(stock);
+            holding.setPortfolio(portfolio);
+            holding.setQuantity(new BigDecimal(0));
+            holding.setAverageCostBasis(new BigDecimal(0));
+            holding.setTotalCostBasis(new BigDecimal(0));
+        }
 
         // 1. Update Portfolio Cash Balance
         if (createTradeRequest.getSide() == Side.BUY) {
