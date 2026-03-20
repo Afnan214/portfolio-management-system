@@ -1,0 +1,24 @@
+<div class="relative">
+  <input type="text" class="input input-bordered input-sm w-full uppercase" [(ngModel)]="searchTerm"
+    (ngModelChange)="onInputChange()" (focus)="onFocus()" (blur)="onBlur()" [disabled]="disabled"
+    placeholder="e.g. AAPL" />
+
+  @if (dropdownOpen) {
+  <div class="absolute z-50 mt-1 max-h-60 w-full overflow-y-auto rounded-md border border-slate-200 bg-white shadow-lg">
+    @if (isLoading) {
+    <div class="px-3 py-2 text-sm text-slate-500">Loading stocks...</div>
+    } @else if (filteredStocks.length === 0) {
+    <div class="px-3 py-2 text-sm text-slate-500">No matching stocks found</div>
+    } @else {
+    @for (stock of filteredStocks; track stock.symbol) {
+    <button type="button"
+      class="flex w-full items-center justify-between px-3 py-2 text-left text-sm hover:bg-slate-100"
+      (click)="selectStock(stock)">
+      <span class="font-medium">{{ stock.symbol }}</span>
+      <span class="text-slate-500">${{ stock.currentPrice }}</span>
+    </button>
+    }
+    }
+  </div>
+  }
+</div>

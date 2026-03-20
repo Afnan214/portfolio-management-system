@@ -19,7 +19,7 @@
     </ul>
 
     <!-- Right side actions (desktop) -->
-    @if(this.isLoggedIn$ | async){
+    @if (isLoggedIn$ | async) {
     <a class="login-link" (click)="logout()">Logout</a>
     }
     @else {

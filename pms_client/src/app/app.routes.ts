@@ -7,7 +7,7 @@ import { CreatePortfolio } from './pages/portfolio/create-portfolio/create-portf
 import { PortfolioDetails } from './pages/portfolio/portfolio-details/portfolio-details';
 import { Portfolios } from './pages/portfolio/portfolios/portfolios';
 import { ConsoleContainer } from './components/console-container/console-container';
-
+import { loggedinRedirect } from './auth/loggedin-redirect';
 export const routes: Routes = [
   {
     path: '',
@@ -16,10 +16,12 @@ export const routes: Routes = [
   {
     path: 'register',
     component: Register,
+    canActivate: [loggedinRedirect],
   },
   {
     path: 'login',
     component: Login,
+    canActivate: [loggedinRedirect],
   },
   {
     path: 'console',
@@ -45,9 +47,6 @@ export const routes: Routes = [
         component: PortfolioDetails,
         canActivate: [authGuard],
       },
-
-    ]
-  }
-
-
+    ],
+  },
 ];

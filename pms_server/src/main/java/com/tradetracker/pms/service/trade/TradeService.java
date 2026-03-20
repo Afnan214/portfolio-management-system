@@ -27,6 +27,8 @@ public class TradeService{
     public TradeService(PortfolioRepository portfolioRepository, UserRepository userRepository, TradeRepository tradeRepository, StockRepository stockRepository) {
         this.portfolioRepository = portfolioRepository;
         this.userRepository = userRepository;
+        this.stockRepository = stockRepository;
+        this.tradeRepository = tradeRepository;
     }
     public List<Trade> getTradesByPortfolio(Long portfolioId){
         return tradeRepository.findTradeByPortfolioId(portfolioId);
@@ -37,7 +39,7 @@ public class TradeService{
     }
 
     public Trade createTrade(Long portfolioId, CreateTradeRequest createTradeRequest) {
-        Stock stock = stockRepository.findById(createTradeRequest.getStockId())
+        Stock stock = stockRepository.findBySymbol(createTradeRequest.getSymbol())
                 .orElseThrow(() -> new RuntimeException("Stock not found"));
 
         Portfolio portfolio = portfolioRepository.findById(portfolioId)

@@ -1,8 +1,9 @@
 import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
-import { PortfolioResponse, PortfolioService } from '../portfolio-service';
+import { PortfolioResponse } from '../../../services/portfolio-service';
 import { AuthService } from '../../../auth/auth-service';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { PortfolioService } from '../../../services/portfolio-service';
 
 @Component({
   selector: 'app-portfolios',

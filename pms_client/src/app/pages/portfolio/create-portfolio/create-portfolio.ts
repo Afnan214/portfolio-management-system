@@ -1,8 +1,8 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { PortfolioService } from '../portfolio-service';
 import { Router } from '@angular/router';
+import { PortfolioService } from '../../../services/portfolio-service';
 
 @Component({
   selector: 'app-create-portfolio',

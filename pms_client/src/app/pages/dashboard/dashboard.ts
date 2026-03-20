@@ -22,13 +22,8 @@ import {
 
 @Component({
   selector: 'app-dashboard',
-  imports: [
-    CommonModule,
-    FormsModule,
-    Sidebar,
-    BaseChartDirective,
-    LucideAngularModule,
-  ],
+  standalone: true,
+  imports: [CommonModule, FormsModule, BaseChartDirective, LucideAngularModule],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css',
 })
@@ -123,21 +118,31 @@ export class Dashboard {
 
   getTransactionIcon(type: string) {
     switch (type) {
-      case 'buy': return this.HandCoins;
-      case 'sell': return this.ArrowBigUp;
-      case 'deposit': return this.BanknoteArrowUp;
-      case 'withdraw': return this.BanknoteArrowDown;
-      default: return this.HandCoins;
+      case 'buy':
+        return this.HandCoins;
+      case 'sell':
+        return this.ArrowBigUp;
+      case 'deposit':
+        return this.BanknoteArrowUp;
+      case 'withdraw':
+        return this.BanknoteArrowDown;
+      default:
+        return this.HandCoins;
     }
   }
 
   getTransactionColor(type: string) {
     switch (type) {
-      case 'buy': return 'text-blue-500 bg-blue-50';
-      case 'sell': return 'text-orange-500 bg-orange-50';
-      case 'deposit': return 'text-green-500 bg-green-50';
-      case 'withdraw': return 'text-red-500 bg-red-50';
-      default: return 'text-slate-500 bg-slate-50';
+      case 'buy':
+        return 'text-blue-500 bg-blue-50';
+      case 'sell':
+        return 'text-orange-500 bg-orange-50';
+      case 'deposit':
+        return 'text-green-500 bg-green-50';
+      case 'withdraw':
+        return 'text-red-500 bg-red-50';
+      default:
+        return 'text-slate-500 bg-slate-50';
     }
   }
 

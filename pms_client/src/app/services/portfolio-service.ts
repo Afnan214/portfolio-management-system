@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { CurrentUser } from '../../auth/auth-service';
+import { CurrentUser } from '../auth/auth-service';
 
 export interface CreatePortfolioRequest {
   name: string;

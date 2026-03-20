@@ -10,10 +10,10 @@ import java.math.BigDecimal;
 
 public class CreateTradeRequest {
 
-    @NotNull(message="Must provide a stock id")
-    private Long stockId;
+    @NotNull(message="Must provide a symbol")
+    private String symbol;
 
-    @NotBlank(message="Must provide BUY or SELL")
+    @NotNull(message="Must provide BUY or SELL")
     private Side side;
 
     @NotNull(message = "quantity is required")
@@ -24,19 +24,19 @@ public class CreateTradeRequest {
     @NotNull(message = "price per share is required")
     @Positive(message = "Cash balance must be zero or positive")
     private BigDecimal pricePerShare;
-    public CreateTradeRequest(Long stockId, Side sideEnum, BigDecimal quantity, BigDecimal pricePerShare) {
-        this.stockId = stockId;
+    public CreateTradeRequest(String symbol, Side sideEnum, BigDecimal quantity, BigDecimal pricePerShare) {
+        this.symbol = symbol;
         this.side = sideEnum;
         this.quantity = quantity;
         this.pricePerShare = pricePerShare;
     }
 
-    public Long getStockId() {
-        return stockId;
+    public String getSymbol() {
+        return symbol;
     }
 
-    public void setStockId(Long stockId) {
-        this.stockId = stockId;
+    public void setSymbol(String symbol) {
+        this.symbol = symbol;
     }
 
     public Side getSide() {

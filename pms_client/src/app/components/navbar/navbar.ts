@@ -23,7 +23,17 @@ export class Navbar {
   mobileMenuOpen = false;
 
   isLoggedIn$ = this.authService.currentUser$.pipe(map((user) => user !== null));
-
+  ngOnInit(): void {
+    this.authService.getMe().subscribe({
+      next: () => {
+        this.authService.currentUser$.pipe(map((user) => user !== null));
+      },
+      error: () => {},
+    });
+    // this.authService.currentUser$.subscribe((user) => {
+    //   console.log('navbar current uesr: ', user);
+    // });
+  }
   logout() {
     this.authService.logout().subscribe({
       next: () => {
