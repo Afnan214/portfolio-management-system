@@ -114,11 +114,13 @@ export class PortfolioDetails implements OnInit {
         this.selectedStock = null;
         this.tradeAction = Side.BUY;
         this.isSubmittingTrade = false;
+        this.cdr.detectChanges();
       },
       error: (error) => {
         console.error(error);
         this.tradeErrorMessage = 'Failed to place trade.';
         this.isSubmittingTrade = false;
+        this.cdr.detectChanges();
       },
     });
   }
