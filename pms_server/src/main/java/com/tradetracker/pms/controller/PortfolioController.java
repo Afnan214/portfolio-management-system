@@ -7,6 +7,7 @@ import com.tradetracker.pms.dto.response.portfolio.PortfolioResponse;
 import com.tradetracker.pms.entity.Holding;
 import com.tradetracker.pms.entity.Portfolio;
 import com.tradetracker.pms.entity.Trade;
+import com.tradetracker.pms.service.holding.HoldingService;
 import com.tradetracker.pms.service.portfolio.PortfolioService;
 import com.tradetracker.pms.service.trade.TradeService;
 import jakarta.validation.Valid;
@@ -23,7 +24,9 @@ import java.util.List;
 public class PortfolioController {
     PortfolioService portfolioService;
     TradeService tradeService;
-    public PortfolioController(PortfolioService portfolioService, TradeService tradeService){
+    HoldingService holdingService;
+    public PortfolioController(PortfolioService portfolioService, TradeService tradeService, HoldingService holdingService){
+        this.holdingService = holdingService;
         this.portfolioService= portfolioService;
         this.tradeService = tradeService;
     }
@@ -84,11 +87,11 @@ public class PortfolioController {
     }
 
     //======================================================================================
-    //Holdings section
+    //Holdings section ----> implemented in
     @GetMapping("/{id}/holdings")
     public ResponseEntity<List<Holding>> getHoldingsByPortfolio(@PathVariable Long id){
-        return ResponseEntity.ok(List.of(new Holding()));
+        List<Holding> holdings = holdingService.getHoldigsByPortfolioId(id);
+        return ResponseEntity.ok(holdings);
     }
-
 
 }

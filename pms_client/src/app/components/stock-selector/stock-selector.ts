@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, forwardRef, OnInit } from '@angular/core';
+import { Component, forwardRef, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
 import { ControlValueAccessor, FormsModule, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { StockQuote, StockService } from '../../services/stock-service';
 
@@ -17,7 +17,9 @@ import { StockQuote, StockService } from '../../services/stock-service';
     },
   ],
 })
-export class StockSelector implements ControlValueAccessor, OnInit {
+export class StockSelector implements ControlValueAccessor, OnInit, OnChanges {
+  @Input() allowedSymbols: string[] | null = null;
+
   stocks: StockQuote[] = [];
   filteredStocks: StockQuote[] = [];
 
@@ -38,13 +40,23 @@ export class StockSelector implements ControlValueAccessor, OnInit {
     this.loadStocks();
   }
 
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['allowedSymbols']) {
+      this.applyFilter();
+
+      if (this.selectedStock && !this.isStockAllowed(this.selectedStock)) {
+        this.clearSelection(true);
+      }
+    }
+  }
+
   loadStocks(): void {
     this.isLoading = true;
 
     this.stockService.getStocks().subscribe({
       next: (stocks) => {
         this.stocks = stocks;
-        this.filteredStocks = stocks;
+        this.applyFilter();
         this.isLoading = false;
       },
       error: (error) => {
@@ -57,13 +69,12 @@ export class StockSelector implements ControlValueAccessor, OnInit {
   onInputChange(): void {
     const value = this.searchTerm.trim().toUpperCase();
 
-    this.selectedStock = null;
-    this.onChange(null);
+    this.clearSelection();
 
     if (value === '') {
-      this.filteredStocks = this.stocks;
+      this.filteredStocks = this.getAllowedStocks();
     } else {
-      this.filteredStocks = this.stocks.filter((stock) =>
+      this.filteredStocks = this.getAllowedStocks().filter((stock) =>
         stock.symbol.toUpperCase().includes(value),
       );
     }
@@ -72,8 +83,13 @@ export class StockSelector implements ControlValueAccessor, OnInit {
   }
 
   selectStock(stock: StockQuote): void {
+    if (!this.isStockAllowed(stock)) {
+      return;
+    }
+
     this.selectedSymbol = stock.symbol;
     this.searchTerm = stock.symbol;
+    this.selectedStock = stock;
     this.dropdownOpen = false;
 
     this.onChange(stock);
@@ -83,10 +99,10 @@ export class StockSelector implements ControlValueAccessor, OnInit {
   onFocus(): void {
     this.dropdownOpen = true;
     this.filteredStocks = this.searchTerm.trim()
-      ? this.stocks.filter((stock) =>
+      ? this.getAllowedStocks().filter((stock) =>
           stock.symbol.toUpperCase().includes(this.searchTerm.trim().toUpperCase()),
         )
-      : this.stocks;
+      : this.getAllowedStocks();
   }
 
   onBlur(): void {
@@ -96,9 +112,10 @@ export class StockSelector implements ControlValueAccessor, OnInit {
     }, 150);
   }
 
-  writeValue(value: string | null): void {
-    this.selectedSymbol = value ?? '';
-    this.searchTerm = value ?? '';
+  writeValue(value: StockQuote | null): void {
+    this.selectedStock = value;
+    this.selectedSymbol = value?.symbol ?? '';
+    this.searchTerm = value?.symbol ?? '';
   }
 
   registerOnChange(fn: (value: StockQuote | null) => void): void {
@@ -111,5 +128,42 @@ export class StockSelector implements ControlValueAccessor, OnInit {
 
   setDisabledState(isDisabled: boolean): void {
     this.disabled = isDisabled;
+  }
+
+  private applyFilter(): void {
+    const searchTerm = this.searchTerm.trim().toUpperCase();
+    const allowedStocks = this.getAllowedStocks();
+
+    this.filteredStocks = searchTerm
+      ? allowedStocks.filter((stock) => stock.symbol.toUpperCase().includes(searchTerm))
+      : allowedStocks;
+  }
+
+  private getAllowedStocks(): StockQuote[] {
+    if (this.allowedSymbols === null) {
+      return this.stocks;
+    }
+
+    const allowedSymbolSet = new Set(this.allowedSymbols.map((symbol) => symbol.toUpperCase()));
+    return this.stocks.filter((stock) => allowedSymbolSet.has(stock.symbol.toUpperCase()));
+  }
+
+  private isStockAllowed(stock: StockQuote): boolean {
+    if (this.allowedSymbols === null) {
+      return true;
+    }
+
+    return this.allowedSymbols.some(
+      (symbol) => symbol.toUpperCase() === stock.symbol.toUpperCase(),
+    );
+  }
+
+  private clearSelection(resetSearchTerm = false): void {
+    this.selectedStock = null;
+    this.selectedSymbol = '';
+    if (resetSearchTerm) {
+      this.searchTerm = '';
+    }
+    this.onChange(null);
   }
 }

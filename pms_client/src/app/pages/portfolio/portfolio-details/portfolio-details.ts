@@ -12,6 +12,7 @@ import {
   TradeResponse,
   TradeService,
 } from '../../../services/trade-service';
+import { HoldingResponse, HoldingService } from '../../../services/holdings-service';
 
 @Component({
   selector: 'app-portfolio-details',
@@ -24,10 +25,12 @@ export class PortfolioDetails implements OnInit {
   private route = inject(ActivatedRoute);
   private portfolioService = inject(PortfolioService);
   private tradeService = inject(TradeService);
+  private holdingService = inject(HoldingService);
   private cdr = inject(ChangeDetectorRef);
 
-  //trade information:
   recentTrades: TradeResponse[] = [];
+  holdings: HoldingResponse[] = [];
+
   isSubmittingTrade = false;
   tradeErrorMessage = '';
   tradeSuccessMessage = '';
@@ -39,7 +42,6 @@ export class PortfolioDetails implements OnInit {
   Search = Search;
   fundBalance = 12500.0;
 
-  // Quick Trade
   tradeAction: Side = Side.BUY;
   readonly Side = Side;
   selectedStock: StockQuote | null = null;
@@ -48,10 +50,8 @@ export class PortfolioDetails implements OnInit {
   showAddFundsModal = false;
   addFundsAmount: number | null = null;
 
-  //portfolio id
   idParam = this.route.snapshot.paramMap.get('id');
 
-  // Mock data
   totalBalance = 48250.75;
   allTimeReturn = 12.4;
 
@@ -63,23 +63,49 @@ export class PortfolioDetails implements OnInit {
     return this.tradeQuantity * this.selectedStock.currentPrice;
   }
 
-  getTransactionColor(type: string) {
-    switch (type) {
-      case 'buy':
-        return 'text-blue-500 bg-blue-50';
-      case 'sell':
-        return 'text-orange-500 bg-orange-50';
-      case 'deposit':
-        return 'text-green-500 bg-green-50';
-      case 'withdraw':
-        return 'text-red-500 bg-red-50';
-      default:
-        return 'text-slate-500 bg-slate-50';
-    }
+  get sellableHoldings(): HoldingResponse[] {
+    return this.holdings.filter((holding) => holding.quantity > 0);
   }
 
-  getInitials(symbol: string): string {
-    return symbol.substring(0, 2);
+  get sellableSymbols(): string[] {
+    return this.sellableHoldings.map((holding) => holding.stock.symbol);
+  }
+
+  get selectedHolding(): HoldingResponse | null {
+    if (!this.selectedStock) {
+      return null;
+    }
+
+    return (
+      this.holdings.find(
+        (holding) =>
+          holding.stock.symbol.toUpperCase() === this.selectedStock!.symbol.toUpperCase(),
+      ) ?? null
+    );
+  }
+
+  get maxSellQuantity(): number {
+    return this.tradeAction === Side.SELL ? this.selectedHolding?.quantity ?? 0 : 0;
+  }
+
+  get canSubmitTrade(): boolean {
+    if (this.isSubmittingTrade || !this.selectedStock || !this.tradeQuantity || this.tradeQuantity <= 0) {
+      return false;
+    }
+
+    if (this.tradeAction === Side.SELL) {
+      return this.maxSellQuantity > 0 && this.tradeQuantity <= this.maxSellQuantity;
+    }
+
+    return true;
+  }
+
+  getMarketValue(holding: HoldingResponse): number {
+    return holding.quantity * (holding.stock.currentPrice ?? 0);
+  }
+
+  getUnrealizedGain(holding: HoldingResponse): number {
+    return this.getMarketValue(holding) - holding.totalCostBasis;
   }
 
   makeTrade() {
@@ -87,18 +113,38 @@ export class PortfolioDetails implements OnInit {
       console.log('trade quantity, current pricce are null OORR  idparam not given');
       return;
     }
+
+    if (this.tradeAction === Side.SELL) {
+      if (!this.selectedHolding) {
+        this.tradeErrorMessage = 'You can only sell stocks currently held in this portfolio.';
+        return;
+      }
+
+      if (this.tradeQuantity > this.selectedHolding.quantity) {
+        this.tradeQuantity = this.selectedHolding.quantity;
+        this.tradeErrorMessage = `You can sell up to ${this.selectedHolding.quantity} share${
+          this.selectedHolding.quantity === 1 ? '' : 's'
+        } of ${this.selectedHolding.stock.symbol}.`;
+        return;
+      }
+    }
+
     const payload: CreateTradeRequest = {
       symbol: this.selectedStock.symbol,
       side: this.tradeAction,
       quantity: this.tradeQuantity,
-      pricePerShare: this.selectedStock?.currentPrice,
+      pricePerShare: this.selectedStock.currentPrice,
     };
-    console.log(payload);
+
+    this.isSubmittingTrade = true;
+    this.tradeErrorMessage = '';
+    this.tradeSuccessMessage = '';
 
     this.tradeService.createTrade(payload, Number(this.idParam)).subscribe({
       next: (trade) => {
         this.recentTrades.unshift(trade);
         this.tradeSuccessMessage = `${trade.side} order for ${trade.stock.symbol} placed successfully.`;
+        this.tradeErrorMessage = '';
 
         if (this.portfolio) {
           this.portfolio = {
@@ -110,10 +156,10 @@ export class PortfolioDetails implements OnInit {
           };
         }
 
-        this.tradeQuantity = 0;
-        this.selectedStock = null;
-        this.tradeAction = Side.BUY;
+        this.resetTradeForm();
         this.isSubmittingTrade = false;
+
+        this.loadHoldings();
         this.cdr.detectChanges();
       },
       error: (error) => {
@@ -146,11 +192,11 @@ export class PortfolioDetails implements OnInit {
 
     this.portfolioService.getPortfolioById(portfolioId).subscribe({
       next: (response) => {
-        console.log('response:', response);
         this.portfolio = response;
         this.isLoading = false;
 
         this.loadTrades();
+        this.loadHoldings();
 
         this.cdr.detectChanges();
       },
@@ -171,12 +217,79 @@ export class PortfolioDetails implements OnInit {
     this.tradeService.getTradesByPortfolioId(this.portfolio.id).subscribe({
       next: (trades) => {
         this.recentTrades = trades;
-        console.log('Trades should show here', this.recentTrades);
         this.cdr.detectChanges();
       },
       error: (error) => {
         console.error('Failed to load trades', error);
       },
     });
+  }
+
+  loadHoldings(): void {
+    if (!this.portfolio) {
+      return;
+    }
+
+    this.holdingService.getHoldingsByPortfolioId(this.portfolio.id).subscribe({
+      next: (holdings) => {
+        this.holdings = holdings;
+        this.syncTradeStateWithHoldings();
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        console.error('Failed to load holdings', error);
+      },
+    });
+  }
+
+  setTradeAction(action: Side): void {
+    this.tradeAction = action;
+    this.tradeErrorMessage = '';
+    this.tradeSuccessMessage = '';
+    this.syncTradeStateWithHoldings();
+  }
+
+  onSelectedStockChange(stock: StockQuote | null): void {
+    this.selectedStock = stock;
+    this.tradeErrorMessage = '';
+    this.syncTradeStateWithHoldings();
+  }
+
+  onTradeQuantityChange(): void {
+    if (this.tradeQuantity == null) {
+      return;
+    }
+
+    if (this.tradeQuantity < 1) {
+      this.tradeQuantity = 1;
+    }
+
+    if (this.tradeAction === Side.SELL && this.maxSellQuantity > 0 && this.tradeQuantity > this.maxSellQuantity) {
+      this.tradeQuantity = this.maxSellQuantity;
+    }
+  }
+
+  private syncTradeStateWithHoldings(): void {
+    if (this.tradeAction !== Side.SELL) {
+      return;
+    }
+
+    if (this.selectedStock && !this.selectedHolding) {
+      this.selectedStock = null;
+      this.tradeQuantity = null;
+      this.tradeErrorMessage = 'You can only sell stocks currently held in this portfolio.';
+      return;
+    }
+
+    if (this.tradeQuantity && this.maxSellQuantity > 0 && this.tradeQuantity > this.maxSellQuantity) {
+      this.tradeQuantity = this.maxSellQuantity;
+    }
+  }
+
+  private resetTradeForm(): void {
+    this.tradeQuantity = null;
+    this.selectedStock = null;
+    this.tradeAction = Side.BUY;
+    this.tradeErrorMessage = '';
   }
 }
