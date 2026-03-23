@@ -2,9 +2,6 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectorRef, Component, inject, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { PortfolioService, PortfolioResponse } from '../../../services/portfolio-service';
-import { FormsModule } from '@angular/forms';
-import { LucideAngularModule, ArrowRightLeft, Search } from 'lucide-angular';
-import { StockSelector } from '../../../components/stock-selector/stock-selector';
 import { StockQuote } from '../../../services/stock-service';
 import {
   CreateTradeRequest,
@@ -13,11 +10,27 @@ import {
   TradeService,
 } from '../../../services/trade-service';
 import { HoldingResponse, HoldingService } from '../../../services/holdings-service';
+import { PortfolioHoldingsList } from './components/portfolio-holdings-list';
+import { PortfolioQuickTrade } from './components/portfolio-quick-trade';
+import { PortfolioStatsPanel } from './components/portfolio-stats-panel';
+import { PortfolioSummaryCard } from './components/portfolio-summary-card';
+import { PortfolioTabs } from './components/portfolio-tabs';
+import { PortfolioTradesList } from './components/portfolio-trades-list';
+
+export type PortfolioDetailsTab = 'dashboard' | 'transactions' | 'holdings' | 'stats';
 
 @Component({
   selector: 'app-portfolio-details',
   standalone: true,
-  imports: [CommonModule, FormsModule, LucideAngularModule, StockSelector],
+  imports: [
+    CommonModule,
+    PortfolioTabs,
+    PortfolioSummaryCard,
+    PortfolioHoldingsList,
+    PortfolioTradesList,
+    PortfolioQuickTrade,
+    PortfolioStatsPanel,
+  ],
   templateUrl: './portfolio-details.html',
   styleUrl: './portfolio-details.css',
 })
@@ -27,6 +40,13 @@ export class PortfolioDetails implements OnInit {
   private tradeService = inject(TradeService);
   private holdingService = inject(HoldingService);
   private cdr = inject(ChangeDetectorRef);
+
+  readonly tabs: Array<{ id: PortfolioDetailsTab; label: string }> = [
+    { id: 'dashboard', label: 'Dashboard' },
+    { id: 'transactions', label: 'Transactions' },
+    { id: 'holdings', label: 'Holdings' },
+    { id: 'stats', label: 'Stats' },
+  ];
 
   recentTrades: TradeResponse[] = [];
   holdings: HoldingResponse[] = [];
@@ -38,22 +58,14 @@ export class PortfolioDetails implements OnInit {
   portfolio: PortfolioResponse | null = null;
   isLoading = true;
   errorMessage = '';
-  ArrowRightLeft = ArrowRightLeft;
-  Search = Search;
-  fundBalance = 12500.0;
 
+  activeTab: PortfolioDetailsTab = 'dashboard';
   tradeAction: Side = Side.BUY;
   readonly Side = Side;
   selectedStock: StockQuote | null = null;
-  tradeSymbol = '';
   tradeQuantity: number | null = null;
-  showAddFundsModal = false;
-  addFundsAmount: number | null = null;
 
-  idParam = this.route.snapshot.paramMap.get('id');
-
-  totalBalance = 48250.75;
-  allTimeReturn = 12.4;
+  readonly idParam = this.route.snapshot.paramMap.get('id');
 
   get estimatedTradeTotal(): number {
     if (!this.selectedStock || !this.tradeQuantity || this.tradeQuantity <= 0) {
@@ -63,8 +75,28 @@ export class PortfolioDetails implements OnInit {
     return this.tradeQuantity * this.selectedStock.currentPrice;
   }
 
+  get activeHoldings(): HoldingResponse[] {
+    return [...this.holdings]
+      .filter((holding) => holding.quantity > 0)
+      .sort((left, right) => this.getMarketValue(right) - this.getMarketValue(left));
+  }
+
+  get dashboardHoldings(): HoldingResponse[] {
+    return this.activeHoldings.slice(0, 5);
+  }
+
+  get sortedRecentTrades(): TradeResponse[] {
+    return [...this.recentTrades].sort(
+      (left, right) => new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime(),
+    );
+  }
+
+  get dashboardTrades(): TradeResponse[] {
+    return this.sortedRecentTrades.slice(0, 5);
+  }
+
   get sellableHoldings(): HoldingResponse[] {
-    return this.holdings.filter((holding) => holding.quantity > 0);
+    return this.activeHoldings;
   }
 
   get sellableSymbols(): string[] {
@@ -79,7 +111,7 @@ export class PortfolioDetails implements OnInit {
     return (
       this.holdings.find(
         (holding) =>
-          holding.stock.symbol.toUpperCase() === this.selectedStock!.symbol.toUpperCase(),
+          holding.stock.symbol.toUpperCase() === this.selectedStock?.symbol.toUpperCase(),
       ) ?? null
     );
   }
@@ -89,7 +121,7 @@ export class PortfolioDetails implements OnInit {
   }
 
   get canSubmitTrade(): boolean {
-    if (this.isSubmittingTrade || !this.selectedStock || !this.tradeQuantity || this.tradeQuantity <= 0) {
+    if (!this.selectedStock || !this.tradeQuantity || this.tradeQuantity <= 0 || this.isSubmittingTrade) {
       return false;
     }
 
@@ -100,6 +132,76 @@ export class PortfolioDetails implements OnInit {
     return true;
   }
 
+  get totalHoldingsCostBasis(): number {
+    return this.activeHoldings.reduce((total, holding) => total + holding.totalCostBasis, 0);
+  }
+
+  get totalHoldingsMarketValue(): number {
+    return this.activeHoldings.reduce((total, holding) => total + this.getMarketValue(holding), 0);
+  }
+
+  get totalUnrealizedGain(): number {
+    return this.totalHoldingsMarketValue - this.totalHoldingsCostBasis;
+  }
+
+  get buyTradeCount(): number {
+    return this.recentTrades.filter((trade) => trade.side === Side.BUY).length;
+  }
+
+  get sellTradeCount(): number {
+    return this.recentTrades.filter((trade) => trade.side === Side.SELL).length;
+  }
+
+  get topHolding(): HoldingResponse | null {
+    return this.activeHoldings[0] ?? null;
+  }
+
+  ngOnInit(): void {
+    if (!this.idParam) {
+      this.isLoading = false;
+      this.errorMessage = 'Portfolio id is missing.';
+      this.cdr.detectChanges();
+      return;
+    }
+
+    const portfolioId = Number(this.idParam);
+
+    if (Number.isNaN(portfolioId)) {
+      this.isLoading = false;
+      this.errorMessage = 'Invalid portfolio id.';
+      this.cdr.detectChanges();
+      return;
+    }
+
+    this.portfolioService.getPortfolioById(portfolioId).subscribe({
+      next: (response) => {
+        this.portfolio = response;
+        this.isLoading = false;
+        this.loadTrades();
+        this.loadHoldings();
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        console.error(error);
+        this.errorMessage = 'Failed to load portfolio.';
+        this.isLoading = false;
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
+  setActiveTab(tab: PortfolioDetailsTab): void {
+    this.activeTab = tab;
+  }
+
+  showAllHoldings(): void {
+    this.activeTab = 'holdings';
+  }
+
+  showAllTransactions(): void {
+    this.activeTab = 'transactions';
+  }
+
   getMarketValue(holding: HoldingResponse): number {
     return holding.quantity * (holding.stock.currentPrice ?? 0);
   }
@@ -108,9 +210,8 @@ export class PortfolioDetails implements OnInit {
     return this.getMarketValue(holding) - holding.totalCostBasis;
   }
 
-  makeTrade() {
+  makeTrade(): void {
     if (!this.selectedStock?.currentPrice || !this.tradeQuantity || !this.idParam) {
-      console.log('trade quantity, current pricce are null OORR  idparam not given');
       return;
     }
 
@@ -142,7 +243,7 @@ export class PortfolioDetails implements OnInit {
 
     this.tradeService.createTrade(payload, Number(this.idParam)).subscribe({
       next: (trade) => {
-        this.recentTrades.unshift(trade);
+        this.recentTrades = [trade, ...this.recentTrades];
         this.tradeSuccessMessage = `${trade.side} order for ${trade.stock.symbol} placed successfully.`;
         this.tradeErrorMessage = '';
 
@@ -158,7 +259,6 @@ export class PortfolioDetails implements OnInit {
 
         this.resetTradeForm();
         this.isSubmittingTrade = false;
-
         this.loadHoldings();
         this.cdr.detectChanges();
       },
@@ -166,44 +266,6 @@ export class PortfolioDetails implements OnInit {
         console.error(error);
         this.tradeErrorMessage = 'Failed to place trade.';
         this.isSubmittingTrade = false;
-        this.cdr.detectChanges();
-      },
-    });
-  }
-
-  ngOnInit(): void {
-    console.log('idParam:', this.idParam);
-
-    if (!this.idParam) {
-      this.isLoading = false;
-      this.errorMessage = 'Portfolio id is missing.';
-      this.cdr.detectChanges();
-      return;
-    }
-
-    const portfolioId = Number(this.idParam);
-
-    if (Number.isNaN(portfolioId)) {
-      this.isLoading = false;
-      this.errorMessage = 'Invalid portfolio id.';
-      this.cdr.detectChanges();
-      return;
-    }
-
-    this.portfolioService.getPortfolioById(portfolioId).subscribe({
-      next: (response) => {
-        this.portfolio = response;
-        this.isLoading = false;
-
-        this.loadTrades();
-        this.loadHoldings();
-
-        this.cdr.detectChanges();
-      },
-      error: (err) => {
-        console.error(err);
-        this.errorMessage = 'Failed to load portfolio.';
-        this.isLoading = false;
         this.cdr.detectChanges();
       },
     });
@@ -252,10 +314,13 @@ export class PortfolioDetails implements OnInit {
   onSelectedStockChange(stock: StockQuote | null): void {
     this.selectedStock = stock;
     this.tradeErrorMessage = '';
+    this.tradeSuccessMessage = '';
     this.syncTradeStateWithHoldings();
   }
 
-  onTradeQuantityChange(): void {
+  onTradeQuantityChange(quantity: number | null): void {
+    this.tradeQuantity = quantity;
+
     if (this.tradeQuantity == null) {
       return;
     }

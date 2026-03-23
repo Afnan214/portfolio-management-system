@@ -1,0 +1,98 @@
+<div class="space-y-6">
+  <div class="rounded-2xl border border-base-300 bg-base-100 p-6 shadow-sm">
+    <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Stats</p>
+    <h2 class="mt-1 text-2xl font-semibold text-slate-900">{{ portfolio.name }} Overview</h2>
+    <p class="mt-2 text-sm text-slate-500">
+      Portfolio-level metrics based on the currently loaded holdings and transactions.
+    </p>
+
+    <div class="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <div class="rounded-xl border border-base-300 bg-base-100 p-4">
+        <p class="text-xs font-medium uppercase tracking-wide text-slate-400">Cash Balance</p>
+        <p class="mt-2 text-2xl font-semibold text-slate-900">{{ portfolio.cashBalance | currency }}</p>
+      </div>
+
+      <div class="rounded-xl border border-base-300 bg-base-100 p-4">
+        <p class="text-xs font-medium uppercase tracking-wide text-slate-400">Active Holdings</p>
+        <p class="mt-2 text-2xl font-semibold text-slate-900">{{ holdingsCount }}</p>
+      </div>
+
+      <div class="rounded-xl border border-base-300 bg-base-100 p-4">
+        <p class="text-xs font-medium uppercase tracking-wide text-slate-400">Total Trades</p>
+        <p class="mt-2 text-2xl font-semibold text-slate-900">{{ tradesCount }}</p>
+      </div>
+
+      <div class="rounded-xl border border-base-300 bg-base-100 p-4">
+        <p class="text-xs font-medium uppercase tracking-wide text-slate-400">Market Value</p>
+        <p class="mt-2 text-2xl font-semibold text-slate-900">{{ marketValue | currency }}</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid gap-6 lg:grid-cols-2">
+    <div class="rounded-2xl border border-base-300 bg-base-100 p-6 shadow-sm">
+      <h3 class="text-lg font-semibold text-slate-900">Position Breakdown</h3>
+
+      <div class="mt-5 space-y-4">
+        <div class="flex items-center justify-between">
+          <span class="text-sm text-slate-500">Cost Basis</span>
+          <span class="text-base font-semibold text-slate-900">{{ costBasis | currency }}</span>
+        </div>
+
+        <div class="flex items-center justify-between">
+          <span class="text-sm text-slate-500">Current Market Value</span>
+          <span class="text-base font-semibold text-slate-900">{{ marketValue | currency }}</span>
+        </div>
+
+        <div class="flex items-center justify-between border-t border-base-300 pt-4">
+          <span class="text-sm font-medium text-slate-600">Unrealized Gain / Loss</span>
+          <span
+            class="text-lg font-semibold"
+            [class.text-green-600]="unrealizedGain >= 0"
+            [class.text-red-600]="unrealizedGain < 0"
+          >
+            {{ unrealizedGain >= 0 ? '+' : '' }}{{ unrealizedGain | currency }}
+          </span>
+        </div>
+      </div>
+
+      @if (topHolding) {
+        <div class="mt-6 rounded-xl bg-slate-50 p-4">
+          <p class="text-xs font-medium uppercase tracking-wide text-slate-400">Largest Position</p>
+          <div class="mt-2 flex items-center justify-between gap-3">
+            <div>
+              <p class="text-base font-semibold text-slate-900">{{ topHolding.stock.symbol }}</p>
+              <p class="text-sm text-slate-500">
+                {{ topHolding.quantity }} share{{ topHolding.quantity === 1 ? '' : 's' }}
+              </p>
+            </div>
+            <p class="text-base font-semibold text-slate-900">{{ topHoldingValue | currency }}</p>
+          </div>
+        </div>
+      }
+    </div>
+
+    <div class="rounded-2xl border border-base-300 bg-base-100 p-6 shadow-sm">
+      <h3 class="text-lg font-semibold text-slate-900">Trade Mix</h3>
+
+      <div class="mt-5 grid gap-4 sm:grid-cols-2">
+        <div class="rounded-xl bg-green-50 p-4">
+          <p class="text-xs font-medium uppercase tracking-wide text-green-700">Buy Trades</p>
+          <p class="mt-2 text-2xl font-semibold text-green-800">{{ buyTradeCount }}</p>
+        </div>
+
+        <div class="rounded-xl bg-red-50 p-4">
+          <p class="text-xs font-medium uppercase tracking-wide text-red-700">Sell Trades</p>
+          <p class="mt-2 text-2xl font-semibold text-red-800">{{ sellTradeCount }}</p>
+        </div>
+      </div>
+
+      <div class="mt-6 rounded-xl bg-slate-50 p-4">
+        <p class="text-sm text-slate-500">
+          This tab summarizes the holdings and transaction data for portfolio
+          <span class="font-semibold text-slate-700">{{ portfolio.id }}</span>.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
