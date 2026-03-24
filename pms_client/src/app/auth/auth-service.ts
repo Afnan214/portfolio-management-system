@@ -28,6 +28,7 @@ export class AuthService {
   private http = inject(HttpClient);
   private router = inject(Router);
   private readonly apiUrl = 'http://localhost:8080/api/auth';
+  private readonly authSessionKey = 'pms_auth_session';
 
   private currentUserSubject = new BehaviorSubject<CurrentUser | null>(null);
   currentUser$ = this.currentUserSubject.asObservable();
@@ -39,6 +40,7 @@ export class AuthService {
       })
       .pipe(
         tap((response) => {
+          this.persistSessionHint();
           this.currentUserSubject.next({
             id: response.id,
             email: response.email,
@@ -54,6 +56,7 @@ export class AuthService {
       })
       .pipe(
         tap((response) => {
+          this.persistSessionHint();
           this.currentUserSubject.next({
             id: response.id,
             email: response.email,
@@ -63,6 +66,11 @@ export class AuthService {
   }
 
   getMe(): Observable<CurrentUser | null> {
+    if (!this.hasSessionHint()) {
+      this.currentUserSubject.next(null);
+      return of(null);
+    }
+
     return this.http
       .get<CurrentUser>(`${this.apiUrl}/me`, {
         withCredentials: true,
@@ -72,6 +80,7 @@ export class AuthService {
           this.currentUserSubject.next(user);
         }),
         catchError(() => {
+          this.clearSessionHint();
           this.currentUserSubject.next(null);
           return of(null);
         }),
@@ -89,6 +98,7 @@ export class AuthService {
       )
       .pipe(
         tap(() => {
+          this.clearSessionHint();
           this.currentUserSubject.next(null);
           console.log(this.getCurrentUserSnapshot());
         }),
@@ -107,6 +117,31 @@ export class AuthService {
   }
 
   clearUser(): void {
+    this.clearSessionHint();
     this.currentUserSubject.next(null);
+  }
+
+  private persistSessionHint(): void {
+    if (typeof localStorage === 'undefined') {
+      return;
+    }
+
+    localStorage.setItem(this.authSessionKey, 'true');
+  }
+
+  private clearSessionHint(): void {
+    if (typeof localStorage === 'undefined') {
+      return;
+    }
+
+    localStorage.removeItem(this.authSessionKey);
+  }
+
+  private hasSessionHint(): boolean {
+    if (typeof localStorage === 'undefined') {
+      return false;
+    }
+
+    return localStorage.getItem(this.authSessionKey) === 'true';
   }
 }
