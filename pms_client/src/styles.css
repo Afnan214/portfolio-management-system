@@ -4,3 +4,19 @@
 @plugin "daisyui" {
   themes: light --default;
 }
+
+body {
+  font-family: 'Roboto', sans-serif;
+}
+
+h1 {
+  font-family: 'Roboto Slab', serif;
+}
+
+.font-title {
+  font-family: 'Roboto Slab', serif;
+}
+
+.font-secondary {
+  font-family: 'DM Sans', sans-serif;
+}

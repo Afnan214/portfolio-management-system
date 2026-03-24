@@ -1,5 +1,15 @@
 import { CommonModule } from '@angular/common';
-import { Component, forwardRef, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
+import {
+  Component,
+  DestroyRef,
+  Input,
+  OnChanges,
+  OnInit,
+  SimpleChanges,
+  forwardRef,
+  inject,
+} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ControlValueAccessor, FormsModule, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { StockQuote, StockService } from '../../services/stock-service';
 
@@ -19,6 +29,8 @@ import { StockQuote, StockService } from '../../services/stock-service';
 })
 export class StockSelector implements ControlValueAccessor, OnInit, OnChanges {
   @Input() allowedSymbols: string[] | null = null;
+
+  private readonly destroyRef = inject(DestroyRef);
 
   stocks: StockQuote[] = [];
   filteredStocks: StockQuote[] = [];
@@ -53,17 +65,30 @@ export class StockSelector implements ControlValueAccessor, OnInit, OnChanges {
   loadStocks(): void {
     this.isLoading = true;
 
-    this.stockService.getStocks().subscribe({
-      next: (stocks) => {
-        this.stocks = stocks;
-        this.applyFilter();
-        this.isLoading = false;
-      },
-      error: (error) => {
-        console.error('Failed to load stocks', error);
-        this.isLoading = false;
-      },
-    });
+    this.stockService
+      .getLiveStocks()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (stocks) => {
+          this.stocks = stocks;
+
+          if (this.selectedSymbol) {
+            this.selectedStock =
+              this.stocks.find((stock) => stock.symbol === this.selectedSymbol) ?? null;
+
+            if (this.selectedStock) {
+              this.onChange(this.selectedStock);
+            }
+          }
+
+          this.applyFilter();
+          this.isLoading = false;
+        },
+        error: (error) => {
+          console.error('Failed to load stocks', error);
+          this.isLoading = false;
+        },
+      });
   }
 
   onInputChange(): void {
