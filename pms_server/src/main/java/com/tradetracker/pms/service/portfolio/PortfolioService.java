@@ -5,12 +5,15 @@ import com.tradetracker.pms.dto.request.portfolio.UpdatePortfolioRequest;
 import com.tradetracker.pms.dto.request.portfolio.trade.CreateTradeRequest;
 import com.tradetracker.pms.dto.response.portfolio.PortfolioResponse;
 import com.tradetracker.pms.entity.Portfolio;
+import com.tradetracker.pms.entity.PortfolioValuation;
 import com.tradetracker.pms.entity.Trade;
 import com.tradetracker.pms.entity.User;
 import com.tradetracker.pms.repository.PortfolioRepository;
+import com.tradetracker.pms.repository.PortfolioValuationRepository;
 import com.tradetracker.pms.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
+import javax.sound.sampled.Port;
 import java.util.List;
 
 
@@ -18,9 +21,11 @@ import java.util.List;
 public class PortfolioService {
     PortfolioRepository portfolioRepository;
     UserRepository userRepository;
-    public PortfolioService(PortfolioRepository portfolioRepository, UserRepository userRepository) {
+    PortfolioValuationRepository portfolioValuationRepository;
+    public PortfolioService(PortfolioRepository portfolioRepository, UserRepository userRepository, PortfolioValuationRepository portfolioValuationRepository) {
         this.portfolioRepository = portfolioRepository;
         this.userRepository = userRepository;
+        this.portfolioValuationRepository = portfolioValuationRepository;
     }
     public List<Portfolio> getPortfolioByUser(String email){
         User user = userRepository.findByEmail(email).orElseThrow(()-> new RuntimeException("User does not exist"));
@@ -39,6 +44,16 @@ public class PortfolioService {
                 portfolio.isDefault(),
                 portfolio.getCreatedAt(),
                 portfolio.getUpdatedAt());
+    }
+    public List<PortfolioValuation> getPortfolioValuationByIId(long id){
+        return portfolioValuationRepository.findByPortfolio_IdOrderBySnapshotTimeAsc(id);
+    }
+    public Portfolio getDefaultPortfolioByUser(String email){
+        User user =  userRepository.findByEmail(email)
+                .orElseThrow(()->new RuntimeException("User cannot be found"));
+
+        return portfolioRepository.findByUserIdAndIsDefault(user.getId(), true)
+                .orElse(null);
     }
     public PortfolioResponse createPortfolio(CreatePortfolioRequest createPortfolioRequest, String email){
         User user =  userRepository.findByEmail(email)
