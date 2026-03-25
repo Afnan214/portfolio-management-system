@@ -1,35 +1,46 @@
 package com.tradetracker.pms.service.trade;
 
-import com.tradetracker.pms.dto.request.portfolio.CreatePortfolioRequest;
-import com.tradetracker.pms.dto.request.portfolio.UpdatePortfolioRequest;
 import com.tradetracker.pms.dto.request.portfolio.trade.CreateTradeRequest;
-import com.tradetracker.pms.dto.response.portfolio.PortfolioResponse;
-import com.tradetracker.pms.entity.*;
-import com.tradetracker.pms.repository.*;
+import com.tradetracker.pms.entity.Holding;
+import com.tradetracker.pms.entity.Portfolio;
+import com.tradetracker.pms.entity.PortfolioValuation;
+import com.tradetracker.pms.entity.Side;
+import com.tradetracker.pms.entity.Stock;
+import com.tradetracker.pms.entity.Trade;
+import com.tradetracker.pms.repository.HoldingRepository;
+import com.tradetracker.pms.repository.PortfolioRepository;
+import com.tradetracker.pms.repository.PortfolioValuationRepository;
+import com.tradetracker.pms.repository.StockRepository;
+import com.tradetracker.pms.repository.TradeRepository;
+import com.tradetracker.pms.repository.UserRepository;
+import com.tradetracker.pms.service.stock.StockService;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 
 @Service
 public class TradeService{
     PortfolioRepository portfolioRepository;
+    PortfolioValuationRepository portfolioValuationRepository;
     UserRepository userRepository;
     TradeRepository tradeRepository;
     StockRepository stockRepository;
     HoldingRepository holdingRepository;
-    public TradeService(PortfolioRepository portfolioRepository, UserRepository userRepository, TradeRepository tradeRepository, StockRepository stockRepository, HoldingRepository holdingRepository) {
+    StockService stockService;
+    public TradeService(PortfolioRepository portfolioRepository, UserRepository userRepository, TradeRepository tradeRepository, StockRepository stockRepository, HoldingRepository holdingRepository, PortfolioValuationRepository portfolioValuationRepository, StockService stockService) {
         this.portfolioRepository = portfolioRepository;
         this.userRepository = userRepository;
         this.stockRepository = stockRepository;
         this.tradeRepository = tradeRepository;
         this.holdingRepository = holdingRepository;
+        this.portfolioValuationRepository = portfolioValuationRepository;
+        this.stockService = stockService;
     }
     public List<Trade> getTradesByPortfolio(Long portfolioId){
         return tradeRepository.findTradeByPortfolioId(portfolioId);
@@ -37,6 +48,57 @@ public class TradeService{
 
     public Trade getTradeById(Long tradeId){
         return tradeRepository.findById(tradeId).orElseThrow(()-> new RuntimeException("Trade could not be found for id: " + tradeId));
+    }
+    private void refreshPortfolioSnapshot(Portfolio portfolio) {
+        List<Holding> holdings = holdingRepository.findByPortfolioId(portfolio.getId());
+
+        BigDecimal holdingsValue = BigDecimal.ZERO;
+        BigDecimal totalCostBasis = BigDecimal.ZERO;
+
+        for (Holding holding : holdings) {
+            BigDecimal quantity = holding.getQuantity();
+            BigDecimal currentPrice = stockService.getQuote(holding.getStock().getSymbol())
+                    .map(quote -> BigDecimal.valueOf(quote.currentPrice()))
+                    .orElse(holding.getAverageCostBasis());
+
+            holdingsValue = holdingsValue.add(currentPrice.multiply(quantity));
+            totalCostBasis = totalCostBasis.add(holding.getTotalCostBasis());
+        }
+
+        BigDecimal totalMarketValue = holdingsValue.setScale(2, RoundingMode.HALF_UP);
+        BigDecimal totalValue = portfolio.getCashBalance().add(holdingsValue).setScale(2, RoundingMode.HALF_UP);
+        BigDecimal investedAmount = totalCostBasis.add(portfolio.getCashBalance());
+        BigDecimal profitLossAmount = totalValue.subtract(investedAmount).setScale(2, RoundingMode.HALF_UP);
+
+        BigDecimal profitLossPercent = BigDecimal.ZERO;
+        if (investedAmount.compareTo(BigDecimal.ZERO) > 0) {
+            profitLossPercent = profitLossAmount
+                    .divide(investedAmount, 4, RoundingMode.HALF_UP)
+                    .multiply(BigDecimal.valueOf(100))
+                    .setScale(2, RoundingMode.HALF_UP);
+        }
+
+        portfolio.setTotalMarketValue(totalMarketValue);
+        portfolio.setTotalGainLoss(profitLossAmount);
+        portfolio.setTotalGainLossPercentage(profitLossPercent);
+        portfolioRepository.save(portfolio);
+
+        LocalDateTime snapshotTime = LocalDateTime.now();
+        LocalDate snapshotDate = snapshotTime.toLocalDate();
+
+        PortfolioValuation valuation = portfolioValuationRepository
+                .findTopByPortfolio_IdOrderBySnapshotTimeDesc(portfolio.getId())
+                .filter(existingValuation -> existingValuation.getSnapshotTime() != null
+                        && existingValuation.getSnapshotTime().toLocalDate().isEqual(snapshotDate))
+                .orElseGet(PortfolioValuation::new);
+
+        valuation.setPortfolio(portfolio);
+        valuation.setSnapshotTime(snapshotTime);
+        valuation.setTotalValue(totalValue);
+        valuation.setProfitLossAmount(profitLossAmount);
+        valuation.setProfitLossPercent(profitLossPercent);
+
+        portfolioValuationRepository.save(valuation);
     }
 
     @Transactional
@@ -115,6 +177,8 @@ public class TradeService{
             holdingRepository.save(holding);
         }
 
+        portfolioRepository.save(portfolio);
+
         Trade trade = new Trade();
         trade.setPortfolio(portfolio);
         trade.setStock(stock);
@@ -123,6 +187,10 @@ public class TradeService{
         trade.setPricePerShare(pricePerShare);
         trade.setTotalAmount(tradeCost);
 
-        return tradeRepository.save(trade);
+        Trade savedTrade = tradeRepository.save(trade);
+
+        refreshPortfolioSnapshot(portfolio);
+
+        return savedTrade;
     }
 }

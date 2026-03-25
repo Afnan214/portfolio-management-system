@@ -1,7 +1,11 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectorRef, Component, inject, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { PortfolioService, PortfolioResponse } from '../../../services/portfolio-service';
+import {
+  PortfolioService,
+  PortfolioResponse,
+  PortfolioValuationResponse,
+} from '../../../services/portfolio-service';
 import { StockQuote } from '../../../services/stock-service';
 import {
   CreateTradeRequest,
@@ -50,6 +54,7 @@ export class PortfolioDetails implements OnInit {
 
   recentTrades: TradeResponse[] = [];
   holdings: HoldingResponse[] = [];
+  valuations: PortfolioValuationResponse[] = [];
 
   isSubmittingTrade = false;
   tradeErrorMessage = '';
@@ -179,6 +184,7 @@ export class PortfolioDetails implements OnInit {
         this.isLoading = false;
         this.loadTrades();
         this.loadHoldings();
+        this.loadValuations();
         this.cdr.detectChanges();
       },
       error: (error) => {
@@ -223,9 +229,8 @@ export class PortfolioDetails implements OnInit {
 
       if (this.tradeQuantity > this.selectedHolding.quantity) {
         this.tradeQuantity = this.selectedHolding.quantity;
-        this.tradeErrorMessage = `You can sell up to ${this.selectedHolding.quantity} share${
-          this.selectedHolding.quantity === 1 ? '' : 's'
-        } of ${this.selectedHolding.stock.symbol}.`;
+        this.tradeErrorMessage = `You can sell up to ${this.selectedHolding.quantity} share${this.selectedHolding.quantity === 1 ? '' : 's'
+          } of ${this.selectedHolding.stock.symbol}.`;
         return;
       }
     }
@@ -300,6 +305,22 @@ export class PortfolioDetails implements OnInit {
       },
       error: (error) => {
         console.error('Failed to load holdings', error);
+      },
+    });
+  }
+
+  loadValuations(): void {
+    if (!this.portfolio) {
+      return;
+    }
+
+    this.portfolioService.getPortfolioValuationsById(this.portfolio.id).subscribe({
+      next: (portfolioValuations) => {
+        this.valuations = portfolioValuations;
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        console.log('Failed to load valuations', error);
       },
     });
   }

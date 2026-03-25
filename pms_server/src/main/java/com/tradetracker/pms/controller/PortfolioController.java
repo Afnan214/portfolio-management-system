@@ -27,12 +27,10 @@ public class PortfolioController {
     PortfolioService portfolioService;
     TradeService tradeService;
     HoldingService holdingService;
-    PortfolioValuationService portfolioValuationService;
-    public PortfolioController(PortfolioService portfolioService, TradeService tradeService, HoldingService holdingService, PortfolioValuationService portfolioValuationService){
+    public PortfolioController(PortfolioService portfolioService, TradeService tradeService, HoldingService holdingService){
         this.holdingService = holdingService;
         this.portfolioService= portfolioService;
         this.tradeService = tradeService;
-        this.portfolioValuationService = portfolioValuationService;
     }
     @GetMapping
     public ResponseEntity<List<Portfolio>> getPortfolios(Authentication authentication){
