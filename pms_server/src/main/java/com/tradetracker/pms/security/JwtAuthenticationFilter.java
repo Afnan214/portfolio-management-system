@@ -7,7 +7,6 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -67,10 +66,10 @@ public class JwtAuthenticationFilter  extends OncePerRequestFilter {
             }
         } catch (ExpiredJwtException e) {
             SecurityContextHolder.clearContext();
-            clearAuthCookie(response);
+            clearAuthCookie(request, response);
         } catch (JwtException | IllegalArgumentException e) {
             SecurityContextHolder.clearContext();
-            clearAuthCookie(response);
+            clearAuthCookie(request, response);
         }
 
         filterChain.doFilter(request, response);
@@ -91,12 +90,12 @@ public class JwtAuthenticationFilter  extends OncePerRequestFilter {
 
         return null;
     }
-    private void clearAuthCookie(HttpServletResponse response) {
+    private void clearAuthCookie(HttpServletRequest request, HttpServletResponse response) {
         ResponseCookie cookie = ResponseCookie.from("access_token", "")
                 .httpOnly(true)
-                .secure(true)
+                .secure(request.isSecure())
                 .path("/")
-                .sameSite("None")
+                .sameSite(request.isSecure() ? "None" : "Lax")
                 .maxAge(0)
                 .build();
 
