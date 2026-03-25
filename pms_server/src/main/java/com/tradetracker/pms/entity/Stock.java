@@ -25,6 +25,46 @@ public class Stock {
   @Column(name = "industry", length = 255)
   private String industry;
 
+  public String getSymbol() {
+    return symbol;
+  }
+
+  public void setSymbol(String symbol) {
+    this.symbol = symbol;
+  }
+
+  public String getCompanyName() {
+    return companyName;
+  }
+
+  public void setCompanyName(String companyName) {
+    this.companyName = companyName;
+  }
+
+  public Long getId() {
+    return id;
+  }
+
+  public void setId(Long id) {
+    this.id = id;
+  }
+
+  public String getIndustry() {
+    return industry;
+  }
+
+  public void setIndustry(String industry) {
+    this.industry = industry;
+  }
+
+  public String getSector() {
+    return sector;
+  }
+
+  public void setSector(String sector) {
+    this.sector = sector;
+  }
+
   @Column(name = "sector", length = 255)
   private String sector;
 

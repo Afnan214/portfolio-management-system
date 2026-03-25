@@ -31,6 +31,68 @@
 
   <div class="grid gap-6 lg:grid-cols-2">
     <div class="rounded-2xl border border-base-300 bg-base-100 p-6 shadow-sm">
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <h3 class="text-lg font-semibold text-slate-900">Portfolio Value History</h3>
+          <p class="mt-1 text-sm text-slate-500">
+            Snapshot values recorded for this portfolio over time.
+          </p>
+        </div>
+        <p class="text-sm font-medium text-slate-400">{{ valuations.length }} points</p>
+      </div>
+
+      @if (hasValuationHistory) {
+        <div class="mt-6 h-72">
+          <canvas
+            baseChart
+            [data]="valueHistoryChartData"
+            [options]="valueHistoryChartOptions"
+            [type]="'line'"
+          ></canvas>
+        </div>
+      } @else {
+        <div class="mt-6 rounded-xl bg-slate-50 p-4 text-sm text-slate-500">
+          No valuation history is available yet for this portfolio.
+        </div>
+      }
+    </div>
+
+    <div class="rounded-2xl border border-base-300 bg-base-100 p-6 shadow-sm">
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <h3 class="text-lg font-semibold text-slate-900">Profit / Loss Trend</h3>
+          <p class="mt-1 text-sm text-slate-500">
+            Percentage gain or loss at each valuation snapshot.
+          </p>
+        </div>
+        <p
+          class="text-sm font-semibold"
+          [class.text-green-600]="unrealizedGain >= 0"
+          [class.text-red-600]="unrealizedGain < 0"
+        >
+          {{ unrealizedGain >= 0 ? '+' : '' }}{{ unrealizedGain | currency }}
+        </p>
+      </div>
+
+      @if (hasValuationHistory) {
+        <div class="mt-6 h-72">
+          <canvas
+            baseChart
+            [data]="performanceChartData"
+            [options]="performanceChartOptions"
+            [type]="'bar'"
+          ></canvas>
+        </div>
+      } @else {
+        <div class="mt-6 rounded-xl bg-slate-50 p-4 text-sm text-slate-500">
+          Profit and loss history will appear here once valuation snapshots exist.
+        </div>
+      }
+    </div>
+  </div>
+
+  <div class="grid gap-6 lg:grid-cols-2">
+    <div class="rounded-2xl border border-base-300 bg-base-100 p-6 shadow-sm">
       <h3 class="text-lg font-semibold text-slate-900">Position Breakdown</h3>
 
       <div class="mt-5 space-y-4">

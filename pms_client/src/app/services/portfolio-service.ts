@@ -16,6 +16,14 @@ export interface PortfolioResponse {
   isDefault: boolean;
 }
 
+export interface PortfolioValuationResponse {
+  id: number;
+  snapshotTime: string;
+  totalValue: number;
+  profitLossAmount: number;
+  profitLossPercent: number;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -27,6 +35,9 @@ export class PortfolioService {
     return this.http.post<PortfolioResponse>(this.apiUrl, payload, {
       withCredentials: true,
     });
+  }
+  getPortfolioValuationsById(id: number): Observable<PortfolioValuationResponse[]> {
+    return this.http.get<PortfolioValuationResponse[]>(`${this.apiUrl}/${id}/valuations`);
   }
   getPortfolioById(id: Number): Observable<PortfolioResponse> {
     return this.http.get<PortfolioResponse>(`${this.apiUrl}/${id}`);
