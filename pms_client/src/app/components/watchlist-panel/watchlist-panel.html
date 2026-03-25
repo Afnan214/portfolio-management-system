@@ -1,0 +1,283 @@
+<div class="card h-full overflow-hidden bg-white shadow-sm">
+  <div class="card-body p-3.5 sm:p-4">
+    <div class="flex items-start justify-between gap-3">
+      <div class="space-y-1">
+        <div class="flex items-center gap-2.5">
+          <div
+            class="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600"
+          >
+            <lucide-icon [img]="Eye" [size]="16"></lucide-icon>
+          </div>
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+              Watch List
+            </p>
+            <div class="flex items-center gap-2">
+              <h2 class="text-base font-semibold text-slate-900">
+                {{ watchlist?.name ?? 'Market Radar' }}
+              </h2>
+              @if (watchlist?.isDefault) {
+                <span
+                  class="inline-flex items-center gap-1 rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-amber-800"
+                >
+                  <lucide-icon [img]="Star" [size]="11"></lucide-icon>
+                  Default
+                </span>
+              }
+            </div>
+          </div>
+        </div>
+        <p class="text-xs text-slate-500">
+          {{
+            watchlist?.description ||
+              'Track the names you want close before you make the next move.'
+          }}
+        </p>
+      </div>
+
+      <button
+        type="button"
+        class="btn btn-ghost btn-xs rounded-lg px-2 text-slate-500"
+        [disabled]="isLoading || isMutating"
+        (click)="refresh()"
+      >
+        <lucide-icon [img]="RefreshCcw" [size]="14"></lucide-icon>
+      </button>
+    </div>
+
+    @if (errorMessage) {
+      <div
+        class="mt-3 flex items-start gap-2 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700"
+      >
+        <lucide-icon [img]="CircleAlert" [size]="14" class="mt-0.5 shrink-0"></lucide-icon>
+        <span>{{ errorMessage }}</span>
+      </div>
+    }
+
+    @if (isLoading) {
+      <div
+        class="mt-3 flex min-h-40 items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-slate-50 text-slate-500"
+      >
+        <div class="flex items-center gap-2 text-xs font-medium">
+          <lucide-icon [img]="LoaderCircle" [size]="14" class="animate-spin"></lucide-icon>
+          Loading watch list...
+        </div>
+      </div>
+    } @else if (!watchlist && hasResolvedWatchlistExistence && !hasAnyWatchlists) {
+      <div class="mt-3 rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-5">
+        <div class="text-center">
+          <p class="text-sm font-semibold text-slate-900">No watch list yet</p>
+          <p class="mt-1.5 text-xs text-slate-500">
+            Create your first watch list to start tracking symbols from the dashboard.
+          </p>
+        </div>
+
+        <button
+          type="button"
+          class="btn btn-sm mt-4 w-full rounded-xl border-none bg-slate-900 text-white hover:bg-slate-800"
+          [disabled]="isMutating"
+          (click)="openCreateWatchlistModal()"
+        >
+          <lucide-icon [img]="Plus" [size]="14"></lucide-icon>
+          Create Watch List
+        </button>
+      </div>
+    } @else if (!watchlist) {
+      <div
+        class="mt-3 rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-5 text-center"
+      >
+        <p class="text-sm font-semibold text-slate-900">Watch list unavailable</p>
+        <p class="mt-1.5 text-xs text-slate-500">
+          Refresh this panel to try loading your watch list again.
+        </p>
+      </div>
+    } @else {
+      <div class="mt-3 rounded-2xl border border-slate-200 bg-slate-50/80 p-3">
+        <div class="flex items-center justify-between gap-2">
+          <p class="text-xs font-semibold tracking-[0.18em] text-slate-400">Add to list</p>
+          @if (availableSymbols.length === 0) {
+            <span class="text-[10px] font-medium uppercase tracking-[0.14em] text-slate-400">
+              Full
+            </span>
+          }
+        </div>
+
+        @if (availableSymbols.length > 0) {
+          <div class="mt-2.5 flex flex-col gap-2 sm:flex-row">
+            <app-stock-selector
+              class="block flex-1"
+              [(ngModel)]="selectedStock"
+              [realtime]="false"
+              [allowedSymbols]="availableSymbols"
+            ></app-stock-selector>
+            <button
+              type="button"
+              class="btn btn-sm rounded-xl border-none bg-slate-900 px-4 text-white hover:bg-slate-800"
+              [disabled]="!selectedStock || isMutating"
+              (click)="addSelectedStock()"
+            >
+              @if (isMutating) {
+                <lucide-icon [img]="LoaderCircle" [size]="14" class="animate-spin"></lucide-icon>
+              } @else {
+                <lucide-icon [img]="Plus" [size]="14"></lucide-icon>
+              }
+              Add
+            </button>
+          </div>
+        } @else {
+          <p class="mt-2.5 rounded-xl bg-white px-3 py-2 text-xs text-slate-500">
+            Every supported stock is already on this watch list.
+          </p>
+        }
+      </div>
+
+      @if (watchlist.stocks.length === 0) {
+        <div
+          class="mt-3 rounded-2xl border border-dashed border-slate-200 bg-white px-4 py-5 text-center"
+        >
+          <p class="text-sm font-semibold text-slate-900">Nothing tracked yet</p>
+          <p class="mt-1.5 text-xs text-slate-500">
+            Add a symbol above to start following live price moves here.
+          </p>
+        </div>
+      } @else {
+        <div class="mt-3 space-y-2">
+          @for (stock of watchlist.stocks; track stock.stockId) {
+            <div
+              class="rounded-2xl border border-slate-100 bg-slate-50/60 px-3 py-2.5 transition hover:border-slate-200 hover:bg-white"
+            >
+              <div class="flex items-center gap-2.5">
+                <div class="min-w-0 flex-1">
+                  <div class="flex items-center gap-2">
+                    <p class="text-sm font-semibold text-slate-900">{{ stock.symbol }}</p>
+                    <span
+                      class="rounded-full px-2 py-0.5 text-[10px] font-semibold ring-1"
+                      [ngClass]="getChangeTone(stock.percentChange)"
+                    >
+                      {{ formatPercentChange(stock.percentChange) }}
+                    </span>
+                  </div>
+                  <p class="truncate text-xs text-slate-500">{{ stock.name }}</p>
+                </div>
+
+                <div class="shrink-0 text-right">
+                  <p class="text-sm font-semibold text-slate-900">
+                    ${{ stock.currentPrice | number: '1.2-2' }}
+                  </p>
+                  <p
+                    class="text-xs font-medium"
+                    [class.text-emerald-600]="stock.change >= 0"
+                    [class.text-rose-600]="stock.change < 0"
+                  >
+                    {{ formatPriceChange(stock.change) }}
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  class="btn btn-ghost btn-xs btn-circle text-slate-400 hover:bg-rose-50 hover:text-rose-600"
+                  [disabled]="isMutating"
+                  (click)="removeStock(stock.stockId, stock.symbol)"
+                >
+                  <lucide-icon [img]="Trash2" [size]="14"></lucide-icon>
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    }
+  </div>
+</div>
+
+@if (showCreateWatchlistModal) {
+  <div
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4"
+    (click)="closeCreateWatchlistModal()"
+  >
+    <div
+      class="w-full max-w-sm rounded-2xl bg-white p-5 shadow-xl"
+      (click)="$event.stopPropagation()"
+    >
+      <div class="flex items-start justify-between gap-3">
+        <div>
+          <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+            Create Watch List
+          </p>
+          <h3 class="mt-1 text-lg font-semibold text-slate-900">Start your first list</h3>
+          <p class="mt-1.5 text-sm text-slate-500">
+            Give it a name now and you can begin adding symbols right after.
+          </p>
+        </div>
+
+        <button
+          type="button"
+          class="btn btn-ghost btn-sm btn-circle text-slate-500"
+          [disabled]="isMutating"
+          (click)="closeCreateWatchlistModal()"
+        >
+          <lucide-icon [img]="X" [size]="16"></lucide-icon>
+        </button>
+      </div>
+
+      @if (errorMessage) {
+        <div
+          class="mt-3 flex items-start gap-2 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700"
+        >
+          <lucide-icon [img]="CircleAlert" [size]="14" class="mt-0.5 shrink-0"></lucide-icon>
+          <span>{{ errorMessage }}</span>
+        </div>
+      }
+
+      <div class="mt-4 space-y-3">
+        <div>
+          <label class="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">
+            Name
+          </label>
+          <input
+            type="text"
+            [(ngModel)]="newWatchlistName"
+            placeholder="My Watch List"
+            class="input input-bordered input-sm mt-1 w-full"
+          />
+        </div>
+
+        <div>
+          <label class="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">
+            Description
+          </label>
+          <textarea
+            [(ngModel)]="newWatchlistDescription"
+            rows="2"
+            placeholder="What are you keeping an eye on?"
+            class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none transition focus:border-slate-400"
+          ></textarea>
+        </div>
+      </div>
+
+      <div class="mt-5 flex gap-2.5">
+        <button
+          type="button"
+          class="btn btn-ghost btn-sm flex-1 rounded-xl"
+          [disabled]="isMutating"
+          (click)="closeCreateWatchlistModal()"
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          class="btn btn-sm flex-1 rounded-xl border-none bg-slate-900 text-white hover:bg-slate-800"
+          [disabled]="!newWatchlistName.trim() || isMutating"
+          (click)="createWatchlist()"
+        >
+          @if (isMutating) {
+            <lucide-icon [img]="LoaderCircle" [size]="14" class="animate-spin"></lucide-icon>
+          } @else {
+            <lucide-icon [img]="Plus" [size]="14"></lucide-icon>
+          }
+          Create
+        </button>
+      </div>
+    </div>
+  </div>
+}

@@ -117,45 +117,11 @@
       </div>
     </div>
 
-    <!-- Row 2: Watchlist + Transaction History -->
-    <div class="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-10">
-      <!-- Watchlist -->
-      <div class="card bg-white shadow-sm lg:col-span-6">
-        <div class="card-body p-4">
-          <div class="flex items-center justify-between">
-            <h2 class="card-title text-lg">Watchlist</h2>
-            <button class="btn btn-ghost btn-sm btn-circle">
-              <lucide-icon [img]="EllipsisVertical" [size]="18"></lucide-icon>
-            </button>
-          </div>
-          <div class="watchlist-scroll mt-2 flex flex-col gap-2 overflow-y-auto pr-1">
-            @for (stock of watchList; track stock.symbol) {
-            <div class="flex items-center justify-between rounded-xl bg-slate-50 p-3 transition hover:bg-slate-100">
-              <div class="flex items-center gap-3">
-                <div
-                  class="flex h-10 w-10 items-center justify-center rounded-full bg-slate-200 text-sm font-semibold text-slate-600">
-                  {{ getInitials(stock.symbol) }}
-                </div>
-                <div>
-                  <p class="font-semibold leading-tight">{{ stock.symbol }}</p>
-                  <p class="text-xs text-slate-400">{{ stock.name }}</p>
-                </div>
-              </div>
-              <div class="text-right">
-                <p class="font-semibold">${{ stock.price | number: '1.2-2' }}</p>
-                <span class="text-xs font-medium" [class.text-green-500]="stock.changePercent >= 0"
-                  [class.text-red-500]="stock.changePercent < 0">
-                  {{ stock.changePercent >= 0 ? '+' : '' }}{{ stock.changePercent }}%
-                </span>
-              </div>
-            </div>
-            }
-          </div>
-        </div>
-      </div>
+    <!-- Row 2: Watch List + Transaction History -->
+    <div class="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-10">
+      <app-watchlist-panel class="xl:col-span-4"></app-watchlist-panel>
 
-      <!-- Transaction History -->
-      <div class="card bg-white shadow-sm lg:col-span-4">
+      <div class="card bg-white shadow-sm xl:col-span-6">
         <div class="card-body p-4">
           <h2 class="card-title text-lg">Transaction History</h2>
           <div class="mt-2 flex flex-col gap-3">

@@ -10,8 +10,10 @@ import com.tradetracker.pms.repository.StockRepository;
 import com.tradetracker.pms.repository.UserRepository;
 import com.tradetracker.pms.repository.WatchlistRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -43,7 +45,10 @@ public class WatchlistService {
   public WatchlistResponse getDefaultWatchlist(String email) {
     User user = getUserByEmail(email);
     Watchlist watchlist = watchlistRepository.findByUserIdAndIsDefault(user.getId(), true)
-        .orElseThrow(() -> new RuntimeException("Default watchlist not found"));
+        .orElseThrow(() -> new ResponseStatusException(
+            HttpStatus.NOT_FOUND,
+            "Default watchlist not found"
+        ));
     return toResponse(watchlist);
   }
 
@@ -81,7 +86,10 @@ public class WatchlistService {
     User user = getUserByEmail(email);
     Watchlist watchlist = getWatchlistForUser(watchlistId, user.getId());
     Stock stock = stockRepository.findById(stockId)
-        .orElseThrow(() -> new RuntimeException("Stock not found"));
+        .orElseThrow(() -> new ResponseStatusException(
+            HttpStatus.NOT_FOUND,
+            "Stock not found"
+        ));
 
     watchlist.getStocks().add(stock);
 
@@ -93,11 +101,17 @@ public class WatchlistService {
     User user = getUserByEmail(email);
     Watchlist watchlist = getWatchlistForUser(watchlistId, user.getId());
     Stock stock = stockRepository.findById(stockId)
-        .orElseThrow(() -> new RuntimeException("Stock not found"));
+        .orElseThrow(() -> new ResponseStatusException(
+            HttpStatus.NOT_FOUND,
+            "Stock not found"
+        ));
 
     boolean removed = watchlist.getStocks().remove(stock);
     if (!removed) {
-      throw new RuntimeException("Stock is not in this watchlist");
+      throw new ResponseStatusException(
+          HttpStatus.BAD_REQUEST,
+          "Stock is not in this watchlist"
+      );
     }
 
     return toResponse(watchlistRepository.save(watchlist));
@@ -112,12 +126,18 @@ public class WatchlistService {
 
   private User getUserByEmail(String email) {
     return userRepository.findByEmail(email)
-        .orElseThrow(() -> new RuntimeException("User not found"));
+        .orElseThrow(() -> new ResponseStatusException(
+            HttpStatus.UNAUTHORIZED,
+            "Authenticated user not found"
+        ));
   }
 
   private Watchlist getWatchlistForUser(Long watchlistId, Long userId) {
     return watchlistRepository.findByIdAndUserId(watchlistId, userId)
-        .orElseThrow(() -> new RuntimeException("Watchlist not found"));
+        .orElseThrow(() -> new ResponseStatusException(
+            HttpStatus.NOT_FOUND,
+            "Watchlist not found"
+        ));
   }
 
   private void updateExistingDefaultIfNeeded(Long userId, boolean requestedDefault,
