@@ -19,7 +19,7 @@
       <div class="grid gap-6 xl:grid-cols-[minmax(0,1.6fr)_380px]">
         <div class="space-y-6">
           <div class="block">
-            <app-portfolio-summary-card [portfolio]="portfolio" />
+            <app-portfolio-summary-card [portfolio]="portfolio" [isAddingFunds]="isAddingFunds" (addFunds)="onAddFunds($event)" />
           </div>
 
           <div class="block">

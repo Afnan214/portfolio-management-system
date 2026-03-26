@@ -7,7 +7,10 @@ import { CreatePortfolio } from './pages/portfolio/create-portfolio/create-portf
 import { PortfolioDetails } from './pages/portfolio/portfolio-details/portfolio-details';
 import { Portfolios } from './pages/portfolio/portfolios/portfolios';
 import { MarketOverview } from './pages/market-overview/market-overview';
+import { Profile } from './pages/profile/profile';
 import { ConsoleContainer } from './components/console-container/console-container';
+import { HelpCenter } from './pages/help-center/help-center';
+import { Settings } from './pages/settings/settings';
 import { loggedinRedirect } from './auth/loggedin-redirect';
 export const routes: Routes = [
   {
@@ -60,10 +63,37 @@ export const routes: Routes = [
         canActivate: [authGuard],
       },
       {
+        path: 'profile',
+        component: Profile,
+        canActivate: [authGuard],
+      },
+      {
+        path: 'help',
+        component: HelpCenter,
+        canActivate: [authGuard],
+      },
+      {
+        path: 'settings',
+        component: Settings,
+        canActivate: [authGuard],
+      },
+      {
         path: '**',
         redirectTo: 'dashboard',
       },
     ],
+  },
+  {
+    path: 'preview-profile',
+    component: Profile,
+  },
+  {
+    path: 'preview-help',
+    component: HelpCenter,
+  },
+  {
+    path: 'preview-settings',
+    component: Settings,
   },
   {
     path: '**',

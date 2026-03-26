@@ -45,4 +45,12 @@ export class PortfolioService {
   getPortfoliosByUserId(userId: number): Observable<PortfolioResponse[]> {
     return this.http.get<PortfolioResponse[]>(`${this.apiUrl}`);
   }
+
+  getDefaultPortfolio(): Observable<PortfolioResponse> {
+    return this.http.get<PortfolioResponse>(`${this.apiUrl}/default`);
+  }
+
+  addFunds(portfolioId: number, amount: number): Observable<PortfolioResponse> {
+    return this.http.post<PortfolioResponse>(`${this.apiUrl}/${portfolioId}/add-funds`, { amount });
+  }
 }

@@ -29,6 +29,7 @@ import { StockQuote, StockService } from '../../services/stock-service';
 })
 export class StockSelector implements ControlValueAccessor, OnInit, OnChanges {
   @Input() allowedSymbols: string[] | null = null;
+  @Input() realtime = true;
 
   private readonly destroyRef = inject(DestroyRef);
 
@@ -65,8 +66,11 @@ export class StockSelector implements ControlValueAccessor, OnInit, OnChanges {
   loadStocks(): void {
     this.isLoading = true;
 
-    this.stockService
-      .getLiveStocks()
+    const stockRequest$ = this.realtime
+      ? this.stockService.getLiveStocks()
+      : this.stockService.getStocks();
+
+    stockRequest$
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (stocks) => {

@@ -7,13 +7,15 @@ import com.tradetracker.pms.dto.response.portfolio.PortfolioResponse;
 import com.tradetracker.pms.entity.Portfolio;
 import com.tradetracker.pms.entity.PortfolioValuation;
 import com.tradetracker.pms.entity.Trade;
+import com.tradetracker.pms.entity.TransactionType;
 import com.tradetracker.pms.entity.User;
 import com.tradetracker.pms.repository.PortfolioRepository;
 import com.tradetracker.pms.repository.PortfolioValuationRepository;
 import com.tradetracker.pms.repository.UserRepository;
+import com.tradetracker.pms.service.transaction.TransactionService;
 import org.springframework.stereotype.Service;
 
-import javax.sound.sampled.Port;
+import java.math.BigDecimal;
 import java.util.List;
 
 
@@ -22,10 +24,12 @@ public class PortfolioService {
     PortfolioRepository portfolioRepository;
     UserRepository userRepository;
     PortfolioValuationRepository portfolioValuationRepository;
-    public PortfolioService(PortfolioRepository portfolioRepository, UserRepository userRepository, PortfolioValuationRepository portfolioValuationRepository) {
+    TransactionService transactionService;
+    public PortfolioService(PortfolioRepository portfolioRepository, UserRepository userRepository, PortfolioValuationRepository portfolioValuationRepository, TransactionService transactionService) {
         this.portfolioRepository = portfolioRepository;
         this.userRepository = userRepository;
         this.portfolioValuationRepository = portfolioValuationRepository;
+        this.transactionService = transactionService;
     }
     public List<Portfolio> getPortfolioByUser(String email){
         User user = userRepository.findByEmail(email).orElseThrow(()-> new RuntimeException("User does not exist"));
@@ -75,6 +79,11 @@ public class PortfolioService {
         portfolio.setCashBalance(createPortfolioRequest.getCashBalance());
         portfolio.setDefault(createPortfolioRequest.isDefault());
         Portfolio newPortfolio = portfolioRepository.save(portfolio);
+
+        if (newPortfolio.getCashBalance().compareTo(BigDecimal.ZERO) > 0) {
+            transactionService.logTransaction(newPortfolio, newPortfolio.getCashBalance(), TransactionType.ADD_FUNDS);
+        }
+
         return new PortfolioResponse(
                 newPortfolio.getId(),
                 newPortfolio.getName(),
@@ -100,11 +109,21 @@ public class PortfolioService {
             }
         }
 
+        BigDecimal oldBalance = portfolio.getCashBalance();
+        BigDecimal newBalance = updatePortfolioRequest.getCashBalance();
+
         portfolio.setName(updatePortfolioRequest.getName());
-        portfolio.setCashBalance(updatePortfolioRequest.getCashBalance());
+        portfolio.setCashBalance(newBalance);
         portfolio.setDefault(updatePortfolioRequest.isDefault());
 
         Portfolio updatedPortfolio = portfolioRepository.save(portfolio);
+
+        BigDecimal difference = newBalance.subtract(oldBalance);
+        if (difference.compareTo(BigDecimal.ZERO) > 0) {
+            transactionService.logTransaction(updatedPortfolio, difference, TransactionType.ADD_FUNDS);
+        } else if (difference.compareTo(BigDecimal.ZERO) < 0) {
+            transactionService.logTransaction(updatedPortfolio, difference.abs(), TransactionType.WITHDRAWAL);
+        }
         return new PortfolioResponse(
                 updatedPortfolio.getId(),
                 updatedPortfolio.getName(),
@@ -117,6 +136,28 @@ public class PortfolioService {
                 updatedPortfolio.getUpdatedAt()
         );
     }
+    public PortfolioResponse addFunds(Long id, BigDecimal amount) {
+        Portfolio portfolio = portfolioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Portfolio not found"));
+
+        portfolio.setCashBalance(portfolio.getCashBalance().add(amount));
+        Portfolio updatedPortfolio = portfolioRepository.save(portfolio);
+
+        transactionService.logTransaction(updatedPortfolio, amount, TransactionType.ADD_FUNDS);
+
+        return new PortfolioResponse(
+                updatedPortfolio.getId(),
+                updatedPortfolio.getName(),
+                updatedPortfolio.getCashBalance(),
+                updatedPortfolio.getTotalMarketValue(),
+                updatedPortfolio.getTotalGainLoss(),
+                updatedPortfolio.getTotalGainLossPercentage(),
+                updatedPortfolio.isDefault(),
+                updatedPortfolio.getCreatedAt(),
+                updatedPortfolio.getUpdatedAt()
+        );
+    }
+
     public void deletePortfolioById(Long id){
         Portfolio portfolio = portfolioRepository.findById(id)
                 .orElseThrow(()-> new RuntimeException("Portfolio not found"));

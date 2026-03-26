@@ -1,13 +1,11 @@
-import { Component } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Sidebar } from '../../components/sidebar/sidebar';
 import { BaseChartDirective } from 'ng2-charts';
 import { ChartConfiguration } from 'chart.js';
 import {
   LucideAngularModule,
   ChartLine,
-  EllipsisVertical,
   HandCoins,
   ArrowBigUp,
   BanknoteArrowUp,
@@ -16,23 +14,51 @@ import {
   Percent,
   Plus,
   X,
-  ArrowRightLeft,
-  Search,
 } from 'lucide-angular';
+
+import {
+  TransactionService,
+  TransactionResponse,
+  TransactionType,
+} from '../../services/transaction-service';
+import { AuthService } from '../../auth/auth-service';
+import {
+  PortfolioService,
+  PortfolioResponse,
+  PortfolioValuationResponse,
+} from '../../services/portfolio-service';
+import { CreateTradeRequest, Side, TradeService } from '../../services/trade-service';
+import { HoldingResponse, HoldingService } from '../../services/holdings-service';
+import { StockQuote } from '../../services/stock-service';
+import { WatchlistPanel } from '../../components/watchlist-panel/watchlist-panel';
+import { PortfolioQuickTrade } from '../portfolio/portfolio-details/components/portfolio-quick-trade/portfolio-quick-trade';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule, BaseChartDirective, LucideAngularModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    BaseChartDirective,
+    LucideAngularModule,
+    WatchlistPanel,
+    PortfolioQuickTrade,
+  ],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css',
 })
-export class Dashboard {
+export class Dashboard implements OnInit {
+  private transactionService = inject(TransactionService);
+  private authService = inject(AuthService);
+  private portfolioService = inject(PortfolioService);
+  private tradeService = inject(TradeService);
+  private holdingService = inject(HoldingService);
+  private cdr = inject(ChangeDetectorRef);
+
   sidebarCollapsed = false;
 
   // Lucide icons
   ChartLine = ChartLine;
-  EllipsisVertical = EllipsisVertical;
   HandCoins = HandCoins;
   ArrowBigUp = ArrowBigUp;
   BanknoteArrowUp = BanknoteArrowUp;
@@ -41,58 +67,34 @@ export class Dashboard {
   Percent = Percent;
   Plus = Plus;
   X = X;
-  ArrowRightLeft = ArrowRightLeft;
-  Search = Search;
 
-  fundBalance = 12500.0;
+  defaultPortfolio: PortfolioResponse | null = null;
+  fundBalance = 0;
+  isAddingFunds = false;
 
   // Quick Trade
-  tradeAction: 'buy' | 'sell' = 'buy';
-  tradeSymbol = '';
+  readonly Side = Side;
+  tradeAction: Side = Side.BUY;
+  selectedStock: StockQuote | null = null;
   tradeQuantity: number | null = null;
+  holdings: HoldingResponse[] = [];
+  isSubmittingTrade = false;
+  tradeErrorMessage = '';
+  tradeSuccessMessage = '';
+
   showAddFundsModal = false;
   addFundsAmount: number | null = null;
 
-  // Mock data
-  totalBalance = 48250.75;
-  allTimeReturn = 12.4;
+  valuations: PortfolioValuationResponse[] = [];
+  totalBalance = 0;
+  allTimeReturn = 0;
 
-  watchList = [
-    { symbol: 'AAPL', name: 'Apple Inc.', price: 189.84, changePercent: 1.23 },
-    { symbol: 'GOOGL', name: 'Alphabet Inc.', price: 141.56, changePercent: -0.45 },
-    { symbol: 'MSFT', name: 'Microsoft Corp.', price: 378.91, changePercent: 0.87 },
-    { symbol: 'AMZN', name: 'Amazon.com Inc.', price: 185.07, changePercent: 2.15 },
-    { symbol: 'TSLA', name: 'Tesla Inc.', price: 248.42, changePercent: -1.78 },
-    { symbol: 'NVDA', name: 'NVIDIA Corp.', price: 495.22, changePercent: 3.41 },
-    { symbol: 'META', name: 'Meta Platforms', price: 505.75, changePercent: 0.62 },
-  ];
-
-  transactions = [
-    { type: 'buy', label: 'Bought AAPL', date: '2026-03-18', amount: -1520.0 },
-    { type: 'deposit', label: 'Deposit', date: '2026-03-17', amount: 5000.0 },
-    { type: 'sell', label: 'Sold TSLA', date: '2026-03-15', amount: 2480.5 },
-    { type: 'buy', label: 'Bought NVDA', date: '2026-03-14', amount: -990.44 },
-    { type: 'withdraw', label: 'Withdrawal', date: '2026-03-12', amount: -1000.0 },
-    { type: 'sell', label: 'Sold GOOGL', date: '2026-03-10', amount: 1415.6 },
-  ];
+  transactions: { id: number; type: string; label: string; date: string; amount: number }[] = [];
 
   // Chart config
   chartData: ChartConfiguration<'line'>['data'] = {
-    labels: ['Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar'],
-    datasets: [
-      {
-        data: [35000, 38200, 36800, 41500, 43900, 45100, 48250],
-        label: 'Portfolio Value',
-        fill: true,
-        tension: 0.4,
-        borderColor: '#22c55e',
-        backgroundColor: 'rgba(34,197,94,0.1)',
-        pointBackgroundColor: '#22c55e',
-        pointBorderColor: '#fff',
-        pointRadius: 4,
-        pointHoverRadius: 6,
-      },
-    ],
+    labels: [],
+    datasets: [],
   };
 
   chartOptions: ChartConfiguration<'line'>['options'] = {
@@ -115,6 +117,63 @@ export class Dashboard {
       },
     },
   };
+
+  ngOnInit(): void {
+    this.portfolioService.getDefaultPortfolio().subscribe({
+      next: (portfolio) => {
+        this.defaultPortfolio = portfolio;
+        this.fundBalance = portfolio.cashBalance;
+        this.loadValuations(portfolio.id);
+        this.loadHoldings();
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        console.error('Failed to load default portfolio', error);
+      },
+    });
+
+    this.authService.currentUser$.subscribe((user) => {
+      if (user) {
+        this.transactionService.getTransactionsByUserId(user.id).subscribe((data) => {
+          this.transactions = data.map((tx) => this.mapTransaction(tx));
+          this.cdr.detectChanges();
+        });
+      }
+    });
+  }
+
+  private mapTransaction(tx: TransactionResponse): {
+    id: number;
+    type: string;
+    label: string;
+    date: string;
+    amount: number;
+  } {
+    const typeMap: Record<TransactionType, string> = {
+      [TransactionType.BUY_STOCK]: 'buy',
+      [TransactionType.SELL_STOCK]: 'sell',
+      [TransactionType.ADD_FUNDS]: 'deposit',
+      [TransactionType.WITHDRAWAL]: 'withdraw',
+    };
+
+    const labelMap: Record<TransactionType, string> = {
+      [TransactionType.BUY_STOCK]: 'Buy Stock',
+      [TransactionType.SELL_STOCK]: 'Sell Stock',
+      [TransactionType.ADD_FUNDS]: 'Deposit',
+      [TransactionType.WITHDRAWAL]: 'Withdrawal',
+    };
+
+    return {
+      id: tx.id,
+      type: typeMap[tx.type],
+      label: labelMap[tx.type],
+      date: tx.createdAt.substring(0, 10),
+      amount:
+        tx.type === TransactionType.BUY_STOCK || tx.type === TransactionType.WITHDRAWAL
+          ? -tx.amount
+          : tx.amount,
+    };
+  }
 
   getTransactionIcon(type: string) {
     switch (type) {
@@ -156,13 +215,248 @@ export class Dashboard {
   }
 
   confirmAddFunds() {
-    if (this.addFundsAmount && this.addFundsAmount > 0) {
-      this.fundBalance += this.addFundsAmount;
-      this.closeAddFundsModal();
+    if (!this.addFundsAmount || this.addFundsAmount <= 0 || !this.defaultPortfolio) {
+      return;
+    }
+
+    this.isAddingFunds = true;
+    this.portfolioService.addFunds(this.defaultPortfolio.id, this.addFundsAmount).subscribe({
+      next: (updated) => {
+        this.defaultPortfolio = updated;
+        this.fundBalance = updated.cashBalance;
+        this.isAddingFunds = false;
+        this.closeAddFundsModal();
+        this.reloadTransactions();
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        console.error('Failed to add funds', error);
+        this.isAddingFunds = false;
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
+  private loadValuations(portfolioId: number): void {
+    this.portfolioService.getPortfolioValuationsById(portfolioId).subscribe({
+      next: (valuations) => {
+        this.valuations = valuations;
+        this.buildChart();
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        console.error('Failed to load valuations', error);
+      },
+    });
+  }
+
+  private buildChart(): void {
+    const labels = this.valuations.map((v) => {
+      const d = new Date(v.snapshotTime);
+      return new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' }).format(d);
+    });
+    const values = this.valuations.map((v) => v.totalValue);
+
+    this.chartData = {
+      labels,
+      datasets: [
+        {
+          data: values,
+          label: 'Portfolio Value',
+          fill: true,
+          tension: 0.35,
+          borderColor: '#22c55e',
+          backgroundColor: 'rgba(34,197,94,0.1)',
+          pointBackgroundColor: '#22c55e',
+          pointBorderColor: '#fff',
+          pointRadius: 3,
+          pointHoverRadius: 5,
+        },
+      ],
+    };
+
+    if (this.valuations.length > 0) {
+      const latest = this.valuations[this.valuations.length - 1];
+      this.totalBalance = latest.totalValue;
+      this.allTimeReturn = latest.profitLossPercent;
+      latest.snapshotTime;
     }
   }
 
-  getInitials(symbol: string): string {
-    return symbol.substring(0, 2);
+  // Quick Trade computed properties
+  get activeHoldings(): HoldingResponse[] {
+    return this.holdings.filter((h) => h.quantity > 0);
+  }
+
+  get sellableHoldings(): HoldingResponse[] {
+    return this.activeHoldings;
+  }
+
+  get sellableSymbols(): string[] {
+    return this.sellableHoldings.map((h) => h.stock.symbol);
+  }
+
+  get selectedHolding(): HoldingResponse | null {
+    if (!this.selectedStock) return null;
+    return (
+      this.holdings.find(
+        (h) => h.stock.symbol.toUpperCase() === this.selectedStock?.symbol.toUpperCase(),
+      ) ?? null
+    );
+  }
+
+  get maxSellQuantity(): number {
+    return this.tradeAction === Side.SELL ? (this.selectedHolding?.quantity ?? 0) : 0;
+  }
+
+  get estimatedTradeTotal(): number {
+    if (!this.selectedStock || !this.tradeQuantity || this.tradeQuantity <= 0) return 0;
+    return this.tradeQuantity * this.selectedStock.currentPrice;
+  }
+
+  get canSubmitTrade(): boolean {
+    if (
+      !this.selectedStock ||
+      !this.tradeQuantity ||
+      this.tradeQuantity <= 0 ||
+      this.isSubmittingTrade
+    ) {
+      return false;
+    }
+    if (this.tradeAction === Side.SELL) {
+      return this.maxSellQuantity > 0 && this.tradeQuantity <= this.maxSellQuantity;
+    }
+    return true;
+  }
+
+  setTradeAction(action: Side): void {
+    this.tradeAction = action;
+    this.tradeErrorMessage = '';
+    this.tradeSuccessMessage = '';
+    this.syncTradeStateWithHoldings();
+  }
+
+  onSelectedStockChange(stock: StockQuote | null): void {
+    this.selectedStock = stock;
+    this.tradeErrorMessage = '';
+    this.tradeSuccessMessage = '';
+    this.syncTradeStateWithHoldings();
+  }
+
+  onTradeQuantityChange(quantity: number | null): void {
+    this.tradeQuantity = quantity;
+    if (this.tradeQuantity == null) return;
+    if (this.tradeQuantity < 1) this.tradeQuantity = 1;
+    if (
+      this.tradeAction === Side.SELL &&
+      this.maxSellQuantity > 0 &&
+      this.tradeQuantity > this.maxSellQuantity
+    ) {
+      this.tradeQuantity = this.maxSellQuantity;
+    }
+  }
+
+  makeTrade(): void {
+    if (!this.selectedStock?.currentPrice || !this.tradeQuantity || !this.defaultPortfolio) return;
+
+    if (this.tradeAction === Side.SELL) {
+      if (!this.selectedHolding) {
+        this.tradeErrorMessage = 'You can only sell stocks currently held in this portfolio.';
+        return;
+      }
+      if (this.tradeQuantity > this.selectedHolding.quantity) {
+        this.tradeQuantity = this.selectedHolding.quantity;
+        this.tradeErrorMessage = `You can sell up to ${this.selectedHolding.quantity} share${this.selectedHolding.quantity === 1 ? '' : 's'} of ${this.selectedHolding.stock.symbol}.`;
+        return;
+      }
+    }
+
+    const payload: CreateTradeRequest = {
+      symbol: this.selectedStock.symbol,
+      side: this.tradeAction,
+      quantity: this.tradeQuantity,
+      pricePerShare: this.selectedStock.currentPrice,
+    };
+
+    this.isSubmittingTrade = true;
+    this.tradeErrorMessage = '';
+    this.tradeSuccessMessage = '';
+
+    this.tradeService.createTrade(payload, this.defaultPortfolio.id).subscribe({
+      next: (trade) => {
+        this.tradeSuccessMessage = `${trade.side} order for ${trade.stock.symbol} placed successfully.`;
+        this.tradeErrorMessage = '';
+
+        if (this.defaultPortfolio) {
+          const newBalance =
+            trade.side === Side.BUY
+              ? this.defaultPortfolio.cashBalance - trade.totalAmount
+              : this.defaultPortfolio.cashBalance + trade.totalAmount;
+          this.defaultPortfolio = { ...this.defaultPortfolio, cashBalance: newBalance };
+          this.fundBalance = newBalance;
+        }
+
+        this.resetTradeForm();
+        this.isSubmittingTrade = false;
+        this.loadHoldings();
+        this.reloadTransactions();
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        console.error(error);
+        this.tradeErrorMessage = 'Failed to place trade.';
+        this.isSubmittingTrade = false;
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
+  private loadHoldings(): void {
+    if (!this.defaultPortfolio) return;
+    this.holdingService.getHoldingsByPortfolioId(this.defaultPortfolio.id).subscribe({
+      next: (holdings) => {
+        this.holdings = holdings;
+        this.syncTradeStateWithHoldings();
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        console.error('Failed to load holdings', error);
+      },
+    });
+  }
+
+  private syncTradeStateWithHoldings(): void {
+    if (this.tradeAction !== Side.SELL) return;
+    if (this.selectedStock && !this.selectedHolding) {
+      this.selectedStock = null;
+      this.tradeQuantity = null;
+      this.tradeErrorMessage = 'You can only sell stocks currently held in this portfolio.';
+      return;
+    }
+    if (
+      this.tradeQuantity &&
+      this.maxSellQuantity > 0 &&
+      this.tradeQuantity > this.maxSellQuantity
+    ) {
+      this.tradeQuantity = this.maxSellQuantity;
+    }
+  }
+
+  private resetTradeForm(): void {
+    this.tradeQuantity = null;
+    this.selectedStock = null;
+    this.tradeAction = Side.BUY;
+    this.tradeErrorMessage = '';
+  }
+
+  private reloadTransactions(): void {
+    this.authService.currentUser$.subscribe((user) => {
+      if (user) {
+        this.transactionService.getTransactionsByUserId(user.id).subscribe((data) => {
+          this.transactions = data.map((tx) => this.mapTransaction(tx));
+          this.cdr.detectChanges();
+        });
+      }
+    });
   }
 }

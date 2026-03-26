@@ -7,6 +7,7 @@ import com.tradetracker.pms.entity.PortfolioValuation;
 import com.tradetracker.pms.entity.Side;
 import com.tradetracker.pms.entity.Stock;
 import com.tradetracker.pms.entity.Trade;
+import com.tradetracker.pms.entity.TransactionType;
 import com.tradetracker.pms.repository.HoldingRepository;
 import com.tradetracker.pms.repository.PortfolioRepository;
 import com.tradetracker.pms.repository.PortfolioValuationRepository;
@@ -14,6 +15,7 @@ import com.tradetracker.pms.repository.StockRepository;
 import com.tradetracker.pms.repository.TradeRepository;
 import com.tradetracker.pms.repository.UserRepository;
 import com.tradetracker.pms.service.stock.StockService;
+import com.tradetracker.pms.service.transaction.TransactionService;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
@@ -33,7 +35,8 @@ public class TradeService{
     StockRepository stockRepository;
     HoldingRepository holdingRepository;
     StockService stockService;
-    public TradeService(PortfolioRepository portfolioRepository, UserRepository userRepository, TradeRepository tradeRepository, StockRepository stockRepository, HoldingRepository holdingRepository, PortfolioValuationRepository portfolioValuationRepository, StockService stockService) {
+    TransactionService transactionService;
+    public TradeService(PortfolioRepository portfolioRepository, UserRepository userRepository, TradeRepository tradeRepository, StockRepository stockRepository, HoldingRepository holdingRepository, PortfolioValuationRepository portfolioValuationRepository, StockService stockService, TransactionService transactionService) {
         this.portfolioRepository = portfolioRepository;
         this.userRepository = userRepository;
         this.stockRepository = stockRepository;
@@ -41,6 +44,7 @@ public class TradeService{
         this.holdingRepository = holdingRepository;
         this.portfolioValuationRepository = portfolioValuationRepository;
         this.stockService = stockService;
+        this.transactionService = transactionService;
     }
     public List<Trade> getTradesByPortfolio(Long portfolioId){
         return tradeRepository.findTradeByPortfolioId(portfolioId);
@@ -188,6 +192,11 @@ public class TradeService{
         trade.setTotalAmount(tradeCost);
 
         Trade savedTrade = tradeRepository.save(trade);
+
+        TransactionType txType = createTradeRequest.getSide() == Side.BUY
+                ? TransactionType.BUY_STOCK
+                : TransactionType.SELL_STOCK;
+        transactionService.logTransaction(portfolio, tradeCost, txType);
 
         refreshPortfolioSnapshot(portfolio);
 

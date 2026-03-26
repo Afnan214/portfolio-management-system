@@ -15,45 +15,132 @@
     </div>
     <hr class="mt-4 border-slate-200" />
 
-    <!-- Most Active Stocks -->
+    <!-- Tabs -->
     <div class="mt-6">
-      <h2 class="text-lg font-semibold text-slate-700">Most Active Stocks</h2>
-      <div class="mt-4 flex gap-4 overflow-x-auto pb-2">
-        @if (mostActiveStocks$ | async; as mostActiveStocks) {
-          @for (stock of mostActiveStocks; track stock.symbol) {
-            <div
-              class="flex min-w-[180px] flex-col items-center gap-3 rounded-2xl bg-white px-5 py-5 shadow-sm transition hover:shadow-md"
-            >
-              <div class="flex items-center gap-2">
-                <img
-                  [src]="getLogoUrl(stock.symbol)"
-                  [alt]="stock.symbol"
-                  class="h-10 w-10 rounded-full object-cover"
-                  onerror="this.style.display='none'"
-                />
-                <span class="text-sm font-bold text-slate-800">{{ stock.symbol }}</span>
-              </div>
-              <span class="text-lg font-semibold text-slate-900">
-                {{ stock.currentPrice | number: '1.2-2' }}$
-              </span>
-              <span
-                class="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold"
-                [ngClass]="
-                  stock.percentChange >= 0
-                    ? 'bg-green-50 text-green-700'
-                    : 'bg-red-50 text-red-600'
-                "
-              >
-                <lucide-icon
-                  [img]="stock.percentChange >= 0 ? TrendingUp : TrendingDown"
-                  [size]="14"
-                ></lucide-icon>
-                {{ stock.percentChange >= 0 ? '+' : '' }}{{ stock.percentChange | number: '1.2-2' }}%
-              </span>
-            </div>
-          }
-        }
+      <div class="flex gap-1 rounded-xl bg-slate-100 p-1 w-fit">
+        <button
+          (click)="activeTab = 'stocks'"
+          class="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition"
+          [ngClass]="activeTab === 'stocks'
+            ? 'bg-white text-slate-800 shadow-sm'
+            : 'text-slate-500 hover:text-slate-700'"
+        >
+          <lucide-icon [img]="Flame" [size]="16"></lucide-icon>
+          Most Active
+        </button>
+        <button
+          (click)="activeTab = 'news'"
+          class="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition"
+          [ngClass]="activeTab === 'news'
+            ? 'bg-white text-slate-800 shadow-sm'
+            : 'text-slate-500 hover:text-slate-700'"
+        >
+          <lucide-icon [img]="Newspaper" [size]="16"></lucide-icon>
+          Market News
+        </button>
       </div>
+
+      <!-- Most Active Stocks -->
+      @if (activeTab === 'stocks') {
+        <div class="mt-4 flex gap-4 overflow-x-auto pb-2">
+          @if (mostActiveStocks$ | async; as mostActiveStocks) {
+            @for (stock of mostActiveStocks; track stock.symbol) {
+              <div
+                class="flex min-w-[180px] flex-col items-center gap-3 rounded-2xl bg-white px-5 py-5 shadow-sm transition hover:shadow-md"
+              >
+                <div class="flex items-center gap-2">
+                  <img
+                    [src]="getLogoUrl(stock.symbol)"
+                    [alt]="stock.symbol"
+                    class="h-10 w-10 rounded-full object-cover"
+                    onerror="this.style.display='none'"
+                  />
+                  <span class="text-sm font-bold text-slate-800">{{ stock.symbol }}</span>
+                </div>
+                <span class="text-lg font-semibold text-slate-900">
+                  {{ stock.currentPrice | number: '1.2-2' }}$
+                </span>
+                <span
+                  class="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold"
+                  [ngClass]="
+                    stock.percentChange >= 0
+                      ? 'bg-green-50 text-green-700'
+                      : 'bg-red-50 text-red-600'
+                  "
+                >
+                  <lucide-icon
+                    [img]="stock.percentChange >= 0 ? TrendingUp : TrendingDown"
+                    [size]="14"
+                  ></lucide-icon>
+                  {{ stock.percentChange >= 0 ? '+' : '' }}{{ stock.percentChange | number: '1.2-2' }}%
+                </span>
+              </div>
+            }
+          }
+        </div>
+      }
+
+      <!-- Market News -->
+      @if (activeTab === 'news') {
+        @if (marketNews$ | async; as news) {
+          <div class="mt-4 flex gap-4 overflow-x-auto pb-2">
+            @for (article of news; track article.id) {
+              <a
+                [href]="article.url"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="group flex min-w-[280px] max-w-[280px] flex-col rounded-2xl bg-white shadow-sm transition hover:shadow-md"
+              >
+                @if (article.image) {
+                  <img
+                    [src]="article.image"
+                    [alt]="article.headline"
+                    class="h-32 w-full rounded-t-2xl object-cover"
+                    onerror="this.style.display='none'"
+                  />
+                }
+                <div class="flex flex-1 flex-col gap-2 p-4">
+                  <div class="flex items-center justify-between text-xs text-slate-400">
+                    <span class="font-medium uppercase tracking-wide">{{ article.source }}</span>
+                    <span>{{ formatNewsDate(article.datetime) }}</span>
+                  </div>
+                  <h3 class="line-clamp-2 text-sm font-semibold text-slate-800 group-hover:text-green-700 transition">
+                    {{ article.headline }}
+                  </h3>
+                  <p class="line-clamp-2 text-xs text-slate-500 leading-relaxed">{{ article.summary }}</p>
+                  <div class="mt-auto flex items-center gap-1 pt-2 text-xs font-medium text-green-600">
+                    Read more
+                    <lucide-icon [img]="ExternalLink" [size]="12"></lucide-icon>
+                  </div>
+                </div>
+              </a>
+            } @empty {
+              <div class="py-10 text-center text-sm text-slate-400 w-full">
+                No market news available.
+              </div>
+            }
+          </div>
+        } @else {
+          <!-- Skeleton loading -->
+          <div class="mt-4 flex gap-4 overflow-x-auto pb-2">
+            @for (i of [1, 2, 3, 4]; track i) {
+              <div class="flex min-w-[280px] max-w-[280px] flex-col rounded-2xl bg-white shadow-sm animate-pulse">
+                <div class="h-32 w-full rounded-t-2xl bg-slate-200"></div>
+                <div class="flex flex-col gap-3 p-4">
+                  <div class="flex justify-between">
+                    <div class="h-3 w-16 rounded bg-slate-200"></div>
+                    <div class="h-3 w-12 rounded bg-slate-200"></div>
+                  </div>
+                  <div class="h-4 w-full rounded bg-slate-200"></div>
+                  <div class="h-4 w-3/4 rounded bg-slate-200"></div>
+                  <div class="h-3 w-full rounded bg-slate-100"></div>
+                  <div class="h-3 w-2/3 rounded bg-slate-100"></div>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      }
     </div>
 
     <!-- All Stocks Table -->

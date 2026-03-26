@@ -59,6 +59,7 @@ export class PortfolioDetails implements OnInit {
   valuations: PortfolioValuationResponse[] = [];
   currentPrices: Record<string, number> = {};
 
+  isAddingFunds = false;
   isSubmittingTrade = false;
   tradeErrorMessage = '';
   tradeSuccessMessage = '';
@@ -201,6 +202,26 @@ export class PortfolioDetails implements OnInit {
 
   setActiveTab(tab: PortfolioDetailsTab): void {
     this.activeTab = tab;
+  }
+
+  onAddFunds(amount: number): void {
+    if (!this.portfolio) {
+      return;
+    }
+
+    this.isAddingFunds = true;
+    this.portfolioService.addFunds(this.portfolio.id, amount).subscribe({
+      next: (updated) => {
+        this.portfolio = updated;
+        this.isAddingFunds = false;
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        console.error('Failed to add funds', error);
+        this.isAddingFunds = false;
+        this.cdr.detectChanges();
+      },
+    });
   }
 
   showAllHoldings(): void {
