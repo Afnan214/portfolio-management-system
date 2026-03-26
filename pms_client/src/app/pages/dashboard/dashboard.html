@@ -182,10 +182,10 @@
     </div>
 
     <div class="mt-6 flex gap-3">
-      <button (click)="closeAddFundsModal()" class="btn btn-ghost flex-1 rounded-xl">Cancel</button>
-      <button (click)="confirmAddFunds()" [disabled]="!addFundsAmount || addFundsAmount <= 0"
+      <button (click)="closeAddFundsModal()" [disabled]="isAddingFunds" class="btn btn-ghost flex-1 rounded-xl">Cancel</button>
+      <button (click)="confirmAddFunds()" [disabled]="isAddingFunds || !addFundsAmount || addFundsAmount <= 0"
         class="btn flex-1 rounded-xl border-none bg-green-500 text-white hover:bg-green-600 disabled:opacity-50">
-        Confirm
+        {{ isAddingFunds ? 'Adding...' : 'Confirm' }}
       </button>
     </div>
   </div>

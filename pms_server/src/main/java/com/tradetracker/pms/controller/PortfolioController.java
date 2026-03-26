@@ -1,5 +1,6 @@
 package com.tradetracker.pms.controller;
 
+import com.tradetracker.pms.dto.request.portfolio.AddFundsRequest;
 import com.tradetracker.pms.dto.request.portfolio.CreatePortfolioRequest;
 import com.tradetracker.pms.dto.request.portfolio.UpdatePortfolioRequest;
 import com.tradetracker.pms.dto.request.portfolio.trade.CreateTradeRequest;
@@ -68,6 +69,15 @@ public class PortfolioController {
         String email = authentication.getName();
         PortfolioResponse newPortfolio = portfolioService.updatePortfolioById(id, updatePortfolioRequest, email);
         return ResponseEntity.status(HttpStatus.CREATED).body(newPortfolio);
+    }
+
+    @PostMapping("/{id}/add-funds")
+    public ResponseEntity<PortfolioResponse> addFunds(
+            @PathVariable Long id,
+            @Valid @RequestBody AddFundsRequest addFundsRequest
+    ) {
+        PortfolioResponse updated = portfolioService.addFunds(id, addFundsRequest.getAmount());
+        return ResponseEntity.ok(updated);
     }
 
     @DeleteMapping("/{id}")

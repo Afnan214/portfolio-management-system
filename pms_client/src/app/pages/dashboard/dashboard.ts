@@ -23,6 +23,7 @@ import {
   TransactionType,
 } from '../../services/transaction-service';
 import { AuthService } from '../../auth/auth-service';
+import { PortfolioService, PortfolioResponse } from '../../services/portfolio-service';
 import { WatchlistPanel } from '../../components/watchlist-panel/watchlist-panel';
 
 @Component({
@@ -35,6 +36,7 @@ import { WatchlistPanel } from '../../components/watchlist-panel/watchlist-panel
 export class Dashboard implements OnInit {
   private transactionService = inject(TransactionService);
   private authService = inject(AuthService);
+  private portfolioService = inject(PortfolioService);
   private cdr = inject(ChangeDetectorRef);
 
   sidebarCollapsed = false;
@@ -52,7 +54,9 @@ export class Dashboard implements OnInit {
   ArrowRightLeft = ArrowRightLeft;
   Search = Search;
 
-  fundBalance = 12500.0;
+  defaultPortfolio: PortfolioResponse | null = null;
+  fundBalance = 0;
+  isAddingFunds = false;
 
   // Quick Trade
   tradeAction: 'buy' | 'sell' = 'buy';
@@ -108,10 +112,20 @@ export class Dashboard implements OnInit {
   };
 
   ngOnInit(): void {
+    this.portfolioService.getDefaultPortfolio().subscribe({
+      next: (portfolio) => {
+        this.defaultPortfolio = portfolio;
+        this.fundBalance = portfolio.cashBalance;
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        console.error('Failed to load default portfolio', error);
+      },
+    });
+
     this.authService.currentUser$.subscribe((user) => {
       if (user) {
         this.transactionService.getTransactionsByUserId(user.id).subscribe((data) => {
-          console.log('Transactions fetched:', data);
           this.transactions = data.map((tx) => this.mapTransaction(tx));
           this.cdr.detectChanges();
         });
@@ -192,9 +206,36 @@ export class Dashboard implements OnInit {
   }
 
   confirmAddFunds() {
-    if (this.addFundsAmount && this.addFundsAmount > 0) {
-      this.fundBalance += this.addFundsAmount;
-      this.closeAddFundsModal();
+    if (!this.addFundsAmount || this.addFundsAmount <= 0 || !this.defaultPortfolio) {
+      return;
     }
+
+    this.isAddingFunds = true;
+    this.portfolioService.addFunds(this.defaultPortfolio.id, this.addFundsAmount).subscribe({
+      next: (updated) => {
+        this.defaultPortfolio = updated;
+        this.fundBalance = updated.cashBalance;
+        this.isAddingFunds = false;
+        this.closeAddFundsModal();
+        this.reloadTransactions();
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        console.error('Failed to add funds', error);
+        this.isAddingFunds = false;
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
+  private reloadTransactions(): void {
+    this.authService.currentUser$.subscribe((user) => {
+      if (user) {
+        this.transactionService.getTransactionsByUserId(user.id).subscribe((data) => {
+          this.transactions = data.map((tx) => this.mapTransaction(tx));
+          this.cdr.detectChanges();
+        });
+      }
+    });
   }
 }

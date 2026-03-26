@@ -136,6 +136,28 @@ public class PortfolioService {
                 updatedPortfolio.getUpdatedAt()
         );
     }
+    public PortfolioResponse addFunds(Long id, BigDecimal amount) {
+        Portfolio portfolio = portfolioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Portfolio not found"));
+
+        portfolio.setCashBalance(portfolio.getCashBalance().add(amount));
+        Portfolio updatedPortfolio = portfolioRepository.save(portfolio);
+
+        transactionService.logTransaction(updatedPortfolio, amount, TransactionType.ADD_FUNDS);
+
+        return new PortfolioResponse(
+                updatedPortfolio.getId(),
+                updatedPortfolio.getName(),
+                updatedPortfolio.getCashBalance(),
+                updatedPortfolio.getTotalMarketValue(),
+                updatedPortfolio.getTotalGainLoss(),
+                updatedPortfolio.getTotalGainLossPercentage(),
+                updatedPortfolio.isDefault(),
+                updatedPortfolio.getCreatedAt(),
+                updatedPortfolio.getUpdatedAt()
+        );
+    }
+
     public void deletePortfolioById(Long id){
         Portfolio portfolio = portfolioRepository.findById(id)
                 .orElseThrow(()-> new RuntimeException("Portfolio not found"));
