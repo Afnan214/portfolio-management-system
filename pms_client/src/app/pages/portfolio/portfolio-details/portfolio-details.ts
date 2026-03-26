@@ -14,12 +14,12 @@ import {
   TradeService,
 } from '../../../services/trade-service';
 import { HoldingResponse, HoldingService } from '../../../services/holdings-service';
-import { PortfolioHoldingsList } from './components/portfolio-holdings-list';
-import { PortfolioQuickTrade } from './components/portfolio-quick-trade';
-import { PortfolioStatsPanel } from './components/portfolio-stats-panel';
-import { PortfolioSummaryCard } from './components/portfolio-summary-card';
-import { PortfolioTabs } from './components/portfolio-tabs';
-import { PortfolioTradesList } from './components/portfolio-trades-list';
+import { PortfolioTabs } from './components/portfolio-tabs/portfolio-tabs';
+import { PortfolioSummaryCard } from './components/portfolio-summary-card/portfolio-summary-card';
+import { PortfolioHoldingsList } from './components/portfolio-holdings-list/portfolio-holdings-list';
+import { PortfolioTradesList } from './components/portfolio-trades-list/portfolio-trades-list';
+import { PortfolioQuickTrade } from './components/portfolio-quick-trade/portfolio-quick-trade';
+import { PortfolioStatsPanel } from './components/portfolio-stats/portfolio-stats-panel';
 
 export type PortfolioDetailsTab = 'dashboard' | 'transactions' | 'holdings' | 'stats';
 

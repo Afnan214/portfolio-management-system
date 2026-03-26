@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { Side, TradeResponse } from '../../../../services/trade-service';
+import { Side, TradeResponse } from '../../../../../services/trade-service';
 
 @Component({
   selector: 'app-portfolio-trades-list',
@@ -19,4 +19,9 @@ export class PortfolioTradesList {
   @Input() viewAllLabel = 'View all';
   @Input() sideEnum = Side;
   @Output() viewAll = new EventEmitter<void>();
+
+  getLogoUrl(symbol: string): string {
+    const base = symbol.replace('.US', '').toLowerCase();
+    return `https://assets.parqet.com/logos/symbol/${base}?format=jpg`;
+  }
 }

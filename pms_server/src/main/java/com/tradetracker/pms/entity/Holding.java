@@ -22,13 +22,11 @@ public class Holding {
     @Column(nullable = false)
     private BigDecimal quantity;
 
-
     @Column(nullable = false)
     private BigDecimal averageCostBasis;
 
     @Column(nullable = false)
     private BigDecimal totalCostBasis; // total amount invested for this stock
-
 
 
     public Long getId() {
@@ -78,4 +76,5 @@ public class Holding {
     public void setTotalCostBasis(BigDecimal totalCostBasis) {
         this.totalCostBasis = totalCostBasis;
     }
+
 }

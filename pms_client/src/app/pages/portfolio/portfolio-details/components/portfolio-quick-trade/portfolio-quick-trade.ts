@@ -2,10 +2,10 @@ import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { LucideAngularModule, ArrowRightLeft } from 'lucide-angular';
-import { StockSelector } from '../../../../components/stock-selector/stock-selector';
-import { HoldingResponse } from '../../../../services/holdings-service';
-import { StockQuote } from '../../../../services/stock-service';
-import { Side } from '../../../../services/trade-service';
+import { StockSelector } from '../../../../../components/stock-selector/stock-selector';
+import { HoldingResponse } from '../../../../../services/holdings-service';
+import { StockQuote } from '../../../../../services/stock-service';
+import { Side } from '../../../../../services/trade-service';
 
 @Component({
   selector: 'app-portfolio-quick-trade',
