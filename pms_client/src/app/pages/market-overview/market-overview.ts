@@ -11,9 +11,13 @@ import {
   SlidersHorizontal,
   ChevronDown,
   Check,
+  Newspaper,
+  ExternalLink,
+  Flame,
 } from 'lucide-angular';
-import { map, tap } from 'rxjs';
+import { map, Observable, startWith, tap } from 'rxjs';
 import { StockQuote, StockService } from '../../services/stock-service';
+import { MarketNews, MarketNewsService } from '../../services/market-news-service';
 import { STOCK_META, StockMeta } from '../../constants/stock-meta';
 
 type ChangeFilter = 'all' | 'gainers' | 'losers';
@@ -27,7 +31,7 @@ type ChangeFilter = 'all' | 'gainers' | 'losers';
 })
 export class MarketOverview {
   private readonly stockService = inject(StockService);
-
+  private readonly marketNewsService = inject(MarketNewsService);
   private readonly elRef = inject(ElementRef);
 
   Coins = Coins;
@@ -38,6 +42,11 @@ export class MarketOverview {
   SlidersHorizontal = SlidersHorizontal;
   ChevronDown = ChevronDown;
   Check = Check;
+  Newspaper = Newspaper;
+  ExternalLink = ExternalLink;
+  Flame = Flame;
+
+  activeTab: 'stocks' | 'news' = 'stocks';
 
   searchTerm = '';
   activeFilter: ChangeFilter = 'all';
@@ -84,6 +93,11 @@ export class MarketOverview {
   );
 
   readonly allStocks$ = this.stockService.getLiveStocks();
+
+  readonly marketNews$: Observable<MarketNews[] | null> = this.marketNewsService.getMarketNews().pipe(
+    tap((news) => console.log('Market news received:', news)),
+    startWith(null),
+  );
 
   filterStocks(stocks: StockQuote[]): StockQuote[] {
     let filtered = stocks;
@@ -134,6 +148,16 @@ export class MarketOverview {
   getLogoUrl(symbol: string): string {
     const base = symbol.replace('.US', '').toLowerCase();
     return `https://assets.parqet.com/logos/symbol/${base}?format=jpg`;
+  }
+
+  formatNewsDate(timestamp: number): string {
+    const now = Date.now();
+    const diff = now - timestamp * 1000;
+    const hours = Math.floor(diff / 3_600_000);
+    if (hours < 1) return 'Just now';
+    if (hours < 24) return `${hours}h ago`;
+    const days = Math.floor(hours / 24);
+    return days === 1 ? '1 day ago' : `${days} days ago`;
   }
 
   private sparklineCache = new Map<string, string>();
