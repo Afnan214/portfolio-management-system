@@ -1,128 +1,89 @@
 <section class="min-h-screen bg-base-200/40 p-6 text-base-content">
   <div class="mx-auto max-w-7xl">
     @if (isLoading) {
-      <div class="rounded-2xl border border-base-300 bg-base-100 p-6 shadow-sm">
-        <p class="text-sm text-slate-500">Loading portfolio...</p>
-      </div>
+    <div class="rounded-2xl border border-base-300 bg-base-100 p-6 shadow-sm">
+      <p class="text-sm text-slate-500">Loading portfolio...</p>
+    </div>
     } @else if (errorMessage) {
-      <div class="rounded-2xl border border-red-200 bg-red-50 p-6 shadow-sm">
-        <p class="text-sm font-medium text-red-600">{{ errorMessage }}</p>
-      </div>
+    <div class="rounded-2xl border border-red-200 bg-red-50 p-6 shadow-sm">
+      <p class="text-sm font-medium text-red-600">{{ errorMessage }}</p>
+    </div>
     } @else if (portfolio) {
-      <div class="space-y-6">
-        <app-portfolio-tabs
-          [tabs]="tabs"
-          [activeTab]="activeTab"
-          (activeTabChange)="setActiveTab($event)"
-        />
+    <div class="space-y-6">
+      <div class="block">
+        <app-portfolio-tabs [tabs]="tabs" [activeTab]="activeTab" (activeTabChange)="setActiveTab($event)" />
+      </div>
 
-        @switch (activeTab) {
-          @case ('dashboard') {
-            <div class="grid gap-6 xl:grid-cols-[minmax(0,1.6fr)_380px]">
-              <div class="space-y-6">
-                <app-portfolio-summary-card [portfolio]="portfolio" />
+      @switch (activeTab) {
+      @case ('dashboard') {
+      <div class="grid gap-6 xl:grid-cols-[minmax(0,1.6fr)_380px]">
+        <div class="space-y-6">
+          <div class="block">
+            <app-portfolio-summary-card [portfolio]="portfolio" />
+          </div>
 
-                <app-portfolio-holdings-list
-                  eyebrow="Positions"
-                  title="Holdings"
-                  description="Only active holdings in this portfolio are shown here."
-                  [holdings]="dashboardHoldings"
-                  [emptyTitle]="
-                    activeHoldings.length === 0 ? 'No active holdings yet' : 'No holdings to show'
-                  "
-                  [emptyDescription]="
-                    activeHoldings.length === 0
-                      ? 'Once you buy stocks, they will appear here.'
-                      : 'This dashboard preview is currently empty.'
-                  "
-                  [showViewAll]="activeHoldings.length > dashboardHoldings.length"
-                  viewAllLabel="View all holdings"
-                  (viewAll)="showAllHoldings()"
-                />
+          <div class="block">
+            <app-portfolio-holdings-list eyebrow="Positions" title="Holdings"
+              description="Only active holdings in this portfolio are shown here." [holdings]="dashboardHoldings"
+              [emptyTitle]="
+          activeHoldings.length === 0 ? 'No active holdings yet' : 'No holdings to show'
+        " [emptyDescription]="
+          activeHoldings.length === 0
+            ? 'Once you buy stocks, they will appear here.'
+            : 'This dashboard preview is currently empty.'
+        " [showViewAll]="activeHoldings.length > dashboardHoldings.length" viewAllLabel="View all holdings"
+              (viewAll)="showAllHoldings()" />
+          </div>
 
-                <app-portfolio-trades-list
-                  eyebrow="Activity"
-                  title="Recent Trades"
-                  description="The five most recent trades for this portfolio."
-                  [trades]="dashboardTrades"
-                  [sideEnum]="Side"
-                  emptyTitle="No trades yet"
-                  emptyDescription="Your newly placed orders will show up here."
-                  [showViewAll]="sortedRecentTrades.length > dashboardTrades.length"
-                  viewAllLabel="View all transactions"
-                  (viewAll)="showAllTransactions()"
-                />
-              </div>
+          <div class="block">
+            <app-portfolio-trades-list eyebrow="Activity" title="Recent Trades"
+              description="The five most recent trades for this portfolio." [trades]="dashboardTrades" [sideEnum]="Side"
+              emptyTitle="No trades yet" emptyDescription="Your newly placed orders will show up here."
+              [showViewAll]="sortedRecentTrades.length > dashboardTrades.length" viewAllLabel="View all transactions"
+              (viewAll)="showAllTransactions()" />
+          </div>
+        </div>
 
-              <div>
-                <app-portfolio-quick-trade
-                  class="block xl:sticky xl:top-6"
-                  [tradeAction]="tradeAction"
-                  [sideEnum]="Side"
-                  [selectedStock]="selectedStock"
-                  [tradeQuantity]="tradeQuantity"
-                  [selectedHolding]="selectedHolding"
-                  [sellableHoldings]="sellableHoldings"
-                  [sellableSymbols]="sellableSymbols"
-                  [maxSellQuantity]="maxSellQuantity"
-                  [estimatedTradeTotal]="estimatedTradeTotal"
-                  [canSubmitTrade]="canSubmitTrade"
-                  [isSubmittingTrade]="isSubmittingTrade"
-                  [tradeErrorMessage]="tradeErrorMessage"
-                  [tradeSuccessMessage]="tradeSuccessMessage"
-                  (tradeActionChange)="setTradeAction($event)"
-                  (selectedStockChange)="onSelectedStockChange($event)"
-                  (tradeQuantityChange)="onTradeQuantityChange($event)"
-                  (submitTrade)="makeTrade()"
-                />
-              </div>
-            </div>
-          }
+        <div class="self-start">
+          <app-portfolio-quick-trade class="block xl:sticky xl:top-6" [tradeAction]="tradeAction" [sideEnum]="Side"
+            [selectedStock]="selectedStock" [tradeQuantity]="tradeQuantity" [selectedHolding]="selectedHolding"
+            [sellableHoldings]="sellableHoldings" [sellableSymbols]="sellableSymbols"
+            [maxSellQuantity]="maxSellQuantity" [estimatedTradeTotal]="estimatedTradeTotal"
+            [canSubmitTrade]="canSubmitTrade" [isSubmittingTrade]="isSubmittingTrade"
+            [tradeErrorMessage]="tradeErrorMessage" [tradeSuccessMessage]="tradeSuccessMessage"
+            (tradeActionChange)="setTradeAction($event)" (selectedStockChange)="onSelectedStockChange($event)"
+            (tradeQuantityChange)="onTradeQuantityChange($event)" (submitTrade)="makeTrade()" />
+        </div>
+      </div>
+      }
 
-          @case ('transactions') {
-            <app-portfolio-trades-list
-              eyebrow="Transactions"
-              title="All Portfolio Trades"
-              description="Buy, sell, and stock details for every trade placed in this portfolio."
-              [trades]="sortedRecentTrades"
-              [sideEnum]="Side"
-              emptyTitle="No trades yet"
-              emptyDescription="Trades placed from this portfolio will appear here."
-            />
-          }
+      @case ('transactions') {
+      <app-portfolio-trades-list eyebrow="Transactions" title="All Portfolio Trades"
+        description="Buy, sell, and stock details for every trade placed in this portfolio."
+        [trades]="sortedRecentTrades" [sideEnum]="Side" emptyTitle="No trades yet"
+        emptyDescription="Trades placed from this portfolio will appear here." />
+      }
 
-          @case ('holdings') {
-            <app-portfolio-holdings-list
-              eyebrow="Holdings"
-              title="All Active Holdings"
-              description="Every active position currently held in this portfolio."
-              [holdings]="activeHoldings"
-              [emptyTitle]="activeHoldings.length === 0 ? 'No active holdings yet' : 'No holdings to show'"
-              [emptyDescription]="
+      @case ('holdings') {
+      <app-portfolio-holdings-list eyebrow="Holdings" title="All Active Holdings"
+        description="Every active position currently held in this portfolio." [holdings]="activeHoldings"
+        [emptyTitle]="activeHoldings.length === 0 ? 'No active holdings yet' : 'No holdings to show'"
+        [emptyDescription]="
                 activeHoldings.length === 0
                   ? 'Once you buy stocks, they will appear here.'
                   : 'There are no holdings available for this portfolio.'
-              "
-            />
-          }
+              " />
+      }
 
-          @case ('stats') {
-            <app-portfolio-stats-panel
-              [portfolio]="portfolio"
-              [holdingsCount]="activeHoldings.length"
-              [tradesCount]="sortedRecentTrades.length"
-              [buyTradeCount]="buyTradeCount"
-              [sellTradeCount]="sellTradeCount"
-              [costBasis]="totalHoldingsCostBasis"
-              [marketValue]="totalHoldingsMarketValue"
-              [unrealizedGain]="totalUnrealizedGain"
-              [valuations]="valuations"
-              [topHolding]="topHolding"
-              [topHoldingValue]="topHolding ? getMarketValue(topHolding) : 0"
-            />
-          }
-        }
-      </div>
+      @case ('stats') {
+      <app-portfolio-stats-panel [portfolio]="portfolio" [holdingsCount]="activeHoldings.length"
+        [tradesCount]="sortedRecentTrades.length" [buyTradeCount]="buyTradeCount" [sellTradeCount]="sellTradeCount"
+        [costBasis]="totalHoldingsCostBasis" [marketValue]="totalHoldingsMarketValue"
+        [unrealizedGain]="totalUnrealizedGain" [valuations]="valuations" [topHolding]="topHolding"
+        [topHoldingValue]="topHolding ? getMarketValue(topHolding) : 0" />
+      }
+      }
+    </div>
     }
   </div>
 </section>

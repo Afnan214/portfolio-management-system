@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input } from '@angular/core';
-import { PortfolioResponse } from '../../../../services/portfolio-service';
+import { PortfolioResponse } from '../../../../../services/portfolio-service';
 
 @Component({
   selector: 'app-portfolio-summary-card',

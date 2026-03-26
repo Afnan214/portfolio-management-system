@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { HoldingResponse } from '../../../../services/holdings-service';
+import { HoldingResponse } from '../../../../../services/holdings-service';
 
 @Component({
   selector: 'app-portfolio-holdings-list',
@@ -9,6 +9,7 @@ import { HoldingResponse } from '../../../../services/holdings-service';
   templateUrl: './portfolio-holdings-list.html',
 })
 export class PortfolioHoldingsList {
+
   @Input() eyebrow = 'Holdings';
   @Input() title = 'Holdings';
   @Input() description = '';
@@ -19,7 +20,13 @@ export class PortfolioHoldingsList {
   @Input() viewAllLabel = 'View all';
   @Output() viewAll = new EventEmitter<void>();
 
+  getLogoUrl(symbol: string): string {
+    const base = symbol.replace('.US', '').toLowerCase();
+    return `https://assets.parqet.com/logos/symbol/${base}?format=jpg`;
+  }
+
   getMarketValue(holding: HoldingResponse): number {
+    console.log(holding)
     return holding.quantity * (holding.stock.currentPrice ?? 0);
   }
 

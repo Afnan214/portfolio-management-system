@@ -2,11 +2,8 @@ import { CommonModule } from '@angular/common';
 import { Component, Input, OnChanges } from '@angular/core';
 import { BaseChartDirective } from 'ng2-charts';
 import { ChartConfiguration } from 'chart.js';
-import { HoldingResponse } from '../../../../services/holdings-service';
-import {
-  PortfolioResponse,
-  PortfolioValuationResponse,
-} from '../../../../services/portfolio-service';
+import { HoldingResponse } from '../../../../../services/holdings-service';
+import { PortfolioResponse, PortfolioService, PortfolioValuationResponse } from '../../../../../services/portfolio-service';
 
 @Component({
   selector: 'app-portfolio-stats-panel',

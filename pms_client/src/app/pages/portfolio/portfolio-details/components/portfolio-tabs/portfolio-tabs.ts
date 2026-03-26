@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import type { PortfolioDetailsTab } from '../portfolio-details';
+import type { PortfolioDetailsTab } from '../../portfolio-details';
 
 @Component({
   selector: 'app-portfolio-tabs',
