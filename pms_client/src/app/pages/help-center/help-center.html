@@ -1,0 +1,195 @@
+<section class="help-center min-h-screen bg-[#f6f8f6] text-slate-800">
+  <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+
+    <!-- Hero Section -->
+    <div class="hero-banner relative overflow-hidden rounded-2xl bg-gradient-to-br from-green-600 via-emerald-500 to-teal-500 px-8 py-14 text-white shadow-lg">
+      <div class="hero-pattern absolute inset-0 opacity-10"></div>
+      <div class="relative z-10 mx-auto max-w-2xl text-center">
+        <div class="mb-4 inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-1.5 text-sm font-medium backdrop-blur-sm">
+          <lucide-icon [img]="Lightbulb" [size]="14"></lucide-icon>
+          <span>How can we help you today?</span>
+        </div>
+        <h1 class="font-title text-4xl font-bold leading-tight tracking-tight">Help Center</h1>
+        <p class="mt-3 text-base text-green-100">
+          Find answers, learn the platform, and get the most out of your Moonland experience.
+        </p>
+
+        <!-- Search Bar -->
+        <div class="relative mx-auto mt-8 max-w-lg">
+          <lucide-icon [img]="Search" [size]="18" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300"></lucide-icon>
+          <input
+            type="text"
+            [(ngModel)]="searchQuery"
+            placeholder="Search for articles, topics, or questions..."
+            class="w-full rounded-xl border-0 bg-white py-3.5 pl-14 pr-4 text-sm text-slate-700 shadow-lg placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-white/50"
+          />
+        </div>
+      </div>
+
+      <!-- Decorative circles -->
+      <div class="absolute -right-12 -top-12 h-48 w-48 rounded-full bg-white/5"></div>
+      <div class="absolute -bottom-8 -left-8 h-32 w-32 rounded-full bg-white/5"></div>
+      <div class="absolute right-1/4 top-4 h-16 w-16 rounded-full bg-white/5"></div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <div class="flex items-center gap-3 rounded-xl bg-white p-4 shadow-sm">
+        <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-50">
+          <lucide-icon [img]="BookOpen" [size]="18" class="text-emerald-600"></lucide-icon>
+        </div>
+        <div>
+          <p class="text-lg font-bold text-slate-800">24</p>
+          <p class="text-xs text-slate-400">Help Articles</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-3 rounded-xl bg-white p-4 shadow-sm">
+        <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50">
+          <lucide-icon [img]="MessageCircle" [size]="18" class="text-blue-600"></lucide-icon>
+        </div>
+        <div>
+          <p class="text-lg font-bold text-slate-800">6</p>
+          <p class="text-xs text-slate-400">Topic Categories</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-3 rounded-xl bg-white p-4 shadow-sm">
+        <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-50">
+          <lucide-icon [img]="Clock" [size]="18" class="text-amber-600"></lucide-icon>
+        </div>
+        <div>
+          <p class="text-lg font-bold text-slate-800">&lt; 24h</p>
+          <p class="text-xs text-slate-400">Avg. Response Time</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Categories Grid -->
+    <div class="mt-10">
+      <h2 class="font-title text-xl font-bold text-slate-800">Browse by Topic</h2>
+      <p class="mt-1 text-sm text-slate-400">Explore our knowledge base organized by category</p>
+
+      <div class="mt-5 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
+        @for (cat of categories; track cat.title) {
+        <div class="category-card group cursor-pointer rounded-xl bg-white p-6 shadow-sm transition-all duration-200 hover:shadow-md">
+          <div class="flex items-start gap-4">
+            <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl transition-colors duration-200" [ngClass]="cat.bgColor">
+              <lucide-icon [img]="cat.icon" [size]="20" [ngClass]="cat.color"></lucide-icon>
+            </div>
+            <div class="min-w-0 flex-1">
+              <h3 class="font-semibold text-slate-800 group-hover:text-green-600 transition-colors duration-200">{{ cat.title }}</h3>
+              <p class="mt-1 text-xs leading-relaxed text-slate-400">{{ cat.description }}</p>
+            </div>
+          </div>
+
+          <div class="mt-4 border-t border-slate-50 pt-4">
+            <ul class="space-y-2">
+              @for (article of cat.articles; track article) {
+              <li class="flex items-center gap-2 text-sm text-slate-500 hover:text-green-600 transition-colors duration-150">
+                <lucide-icon [img]="BookOpen" [size]="13" class="shrink-0 opacity-40"></lucide-icon>
+                <span class="truncate">{{ article }}</span>
+              </li>
+              }
+            </ul>
+          </div>
+
+          <div class="mt-4 flex items-center gap-1 text-xs font-medium text-green-600 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+            <span>View all articles</span>
+            <lucide-icon [img]="ExternalLink" [size]="12"></lucide-icon>
+          </div>
+        </div>
+        }
+      </div>
+    </div>
+
+    <!-- FAQ Section -->
+    <div class="mt-12">
+      <h2 class="font-title text-xl font-bold text-slate-800">Frequently Asked Questions</h2>
+      <p class="mt-1 text-sm text-slate-400">Quick answers to the most common questions</p>
+
+      <div class="mt-5 space-y-3">
+        @for (faq of faqs; track faq.question; let i = $index) {
+        <div class="faq-item overflow-hidden rounded-xl bg-white shadow-sm transition-all duration-200">
+          <button
+            (click)="toggleFaq(i)"
+            class="flex w-full items-center justify-between px-6 py-4 text-left transition-colors hover:bg-slate-50/50"
+          >
+            <span class="pr-4 text-sm font-semibold text-slate-700">{{ faq.question }}</span>
+            <lucide-icon
+              [img]="faq.open ? ChevronUp : ChevronDown"
+              [size]="18"
+              class="shrink-0 text-slate-400 transition-transform duration-200"
+            ></lucide-icon>
+          </button>
+          @if (faq.open) {
+          <div class="faq-answer border-t border-slate-50 px-6 pb-5 pt-4">
+            <p class="text-sm leading-relaxed text-slate-500">{{ faq.answer }}</p>
+          </div>
+          }
+        </div>
+        }
+      </div>
+    </div>
+
+    <!-- Contact Section -->
+    <div class="mt-12 mb-8 overflow-hidden rounded-2xl bg-white shadow-sm">
+      <div class="grid grid-cols-1 md:grid-cols-2">
+        <!-- Left: info -->
+        <div class="flex flex-col justify-center p-8">
+          <span class="text-xs font-semibold uppercase tracking-wider text-green-600">Still need help?</span>
+          <h2 class="font-title mt-2 text-2xl font-bold text-slate-800">Get in Touch</h2>
+          <p class="mt-2 text-sm leading-relaxed text-slate-400">
+            Can't find what you're looking for? Our support team is here to help.
+            Reach out and we'll get back to you as soon as possible.
+          </p>
+          <div class="mt-6 flex flex-col gap-3">
+            <div class="flex items-center gap-3">
+              <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-green-50">
+                <lucide-icon [img]="Mail" [size]="16" class="text-green-600"></lucide-icon>
+              </div>
+              <div>
+                <p class="text-xs text-slate-400">Email us at</p>
+                <p class="text-sm font-medium text-slate-700">support&#64;moonland.com</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-3">
+              <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-50">
+                <lucide-icon [img]="MessageCircle" [size]="16" class="text-blue-600"></lucide-icon>
+              </div>
+              <div>
+                <p class="text-xs text-slate-400">Live chat</p>
+                <p class="text-sm font-medium text-slate-700">Available Mon–Fri, 9am–5pm</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: form -->
+        <div class="border-t border-slate-100 bg-slate-50/50 p-8 md:border-l md:border-t-0">
+          <h3 class="text-sm font-semibold text-slate-700">Send us a message</h3>
+          <div class="mt-4 space-y-3">
+            <div>
+              <label class="text-xs font-medium text-slate-500">Subject</label>
+              <input
+                type="text"
+                placeholder="Brief description of your issue"
+                class="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 placeholder:text-slate-300 focus:border-green-400 focus:outline-none focus:ring-1 focus:ring-green-400"
+              />
+            </div>
+            <div>
+              <label class="text-xs font-medium text-slate-500">Message</label>
+              <textarea
+                rows="4"
+                placeholder="Tell us more about how we can help..."
+                class="mt-1 w-full resize-none rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 placeholder:text-slate-300 focus:border-green-400 focus:outline-none focus:ring-1 focus:ring-green-400"
+              ></textarea>
+            </div>
+            <button class="btn btn-sm w-full rounded-lg border-none bg-green-500 text-white hover:bg-green-600">
+              Send Message
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
