@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Sidebar } from '../../components/sidebar/sidebar';
@@ -19,6 +19,12 @@ import {
   ArrowRightLeft,
   Search,
 } from 'lucide-angular';
+import {
+  TransactionService,
+  TransactionResponse,
+  TransactionType,
+} from '../../services/transaction-service';
+import { AuthService } from '../../auth/auth-service';
 
 @Component({
   selector: 'app-dashboard',
@@ -27,7 +33,11 @@ import {
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css',
 })
-export class Dashboard {
+export class Dashboard implements OnInit {
+  private transactionService = inject(TransactionService);
+  private authService = inject(AuthService);
+  private cdr = inject(ChangeDetectorRef);
+
   sidebarCollapsed = false;
 
   // Lucide icons
@@ -67,14 +77,7 @@ export class Dashboard {
     { symbol: 'META', name: 'Meta Platforms', price: 505.75, changePercent: 0.62 },
   ];
 
-  transactions = [
-    { type: 'buy', label: 'Bought AAPL', date: '2026-03-18', amount: -1520.0 },
-    { type: 'deposit', label: 'Deposit', date: '2026-03-17', amount: 5000.0 },
-    { type: 'sell', label: 'Sold TSLA', date: '2026-03-15', amount: 2480.5 },
-    { type: 'buy', label: 'Bought NVDA', date: '2026-03-14', amount: -990.44 },
-    { type: 'withdraw', label: 'Withdrawal', date: '2026-03-12', amount: -1000.0 },
-    { type: 'sell', label: 'Sold GOOGL', date: '2026-03-10', amount: 1415.6 },
-  ];
+  transactions: { id: number; type: string; label: string; date: string; amount: number }[] = [];
 
   // Chart config
   chartData: ChartConfiguration<'line'>['data'] = {
@@ -115,6 +118,51 @@ export class Dashboard {
       },
     },
   };
+
+  ngOnInit(): void {
+    this.authService.currentUser$.subscribe((user) => {
+      if (user) {
+        this.transactionService.getTransactionsByUserId(user.id).subscribe((data) => {
+          console.log('Transactions fetched:', data);
+          this.transactions = data.map((tx) => this.mapTransaction(tx));
+          this.cdr.detectChanges();
+        });
+      }
+    });
+  }
+
+  private mapTransaction(tx: TransactionResponse): {
+    id: number;
+    type: string;
+    label: string;
+    date: string;
+    amount: number;
+  } {
+    const typeMap: Record<TransactionType, string> = {
+      [TransactionType.BUY_STOCK]: 'buy',
+      [TransactionType.SELL_STOCK]: 'sell',
+      [TransactionType.ADD_FUNDS]: 'deposit',
+      [TransactionType.WITHDRAWAL]: 'withdraw',
+    };
+
+    const labelMap: Record<TransactionType, string> = {
+      [TransactionType.BUY_STOCK]: 'Buy Stock',
+      [TransactionType.SELL_STOCK]: 'Sell Stock',
+      [TransactionType.ADD_FUNDS]: 'Deposit',
+      [TransactionType.WITHDRAWAL]: 'Withdrawal',
+    };
+
+    return {
+      id: tx.id,
+      type: typeMap[tx.type],
+      label: labelMap[tx.type],
+      date: tx.createdAt.substring(0, 10),
+      amount:
+        tx.type === TransactionType.BUY_STOCK || tx.type === TransactionType.WITHDRAWAL
+          ? -tx.amount
+          : tx.amount,
+    };
+  }
 
   getTransactionIcon(type: string) {
     switch (type) {
