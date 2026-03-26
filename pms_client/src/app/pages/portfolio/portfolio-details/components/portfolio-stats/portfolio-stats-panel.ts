@@ -86,15 +86,15 @@ export class PortfolioStatsPanel implements OnChanges {
 
   private buildCharts(): void {
     const labels = this.valuations.map((valuation) => this.formatSnapshotLabel(valuation.snapshotTime));
-    const totalValues = this.valuations.map((valuation) => valuation.totalValue);
+    const profitLoss = this.valuations.map((valuation) => valuation.profitLossAmount);
     const profitLossPercents = this.valuations.map((valuation) => valuation.profitLossPercent);
 
     this.valueHistoryChartData = {
       labels,
       datasets: [
         {
-          data: totalValues,
-          label: 'Portfolio Value',
+          data: profitLoss,
+          label: 'profit/loss (Dollar)',
           fill: true,
           tension: 0.35,
           borderColor: '#22c55e',

@@ -6,7 +6,6 @@ import com.tradetracker.pms.dto.request.portfolio.UpdatePortfolioRequest;
 import com.tradetracker.pms.dto.request.portfolio.trade.CreateTradeRequest;
 import com.tradetracker.pms.dto.response.portfolio.PortfolioResponse;
 import com.tradetracker.pms.entity.Holding;
-import com.tradetracker.pms.entity.Portfolio;
 import com.tradetracker.pms.entity.PortfolioValuation;
 import com.tradetracker.pms.entity.Trade;
 import com.tradetracker.pms.service.holding.HoldingService;
@@ -34,9 +33,9 @@ public class PortfolioController {
         this.tradeService = tradeService;
     }
     @GetMapping
-    public ResponseEntity<List<Portfolio>> getPortfolios(Authentication authentication){
+    public ResponseEntity<List<PortfolioResponse>> getPortfolios(Authentication authentication){
         String email = authentication.getName();
-        List<Portfolio> portfolios=  portfolioService.getPortfolioByUser(email);
+        List<PortfolioResponse> portfolios=  portfolioService.getPortfolioByUser(email);
         return ResponseEntity.ok(portfolios);
     }
 
@@ -47,9 +46,9 @@ public class PortfolioController {
         return ResponseEntity.ok(portfolioResponse);
     }
     @GetMapping("/default")
-    public ResponseEntity<Portfolio> getDefaultPortfolio(Authentication authentication){
+    public ResponseEntity<PortfolioResponse> getDefaultPortfolio(Authentication authentication){
         String email = authentication.getName();
-        Portfolio portfolio = portfolioService.getDefaultPortfolioByUser(email);
+        PortfolioResponse portfolio = portfolioService.getDefaultPortfolioByUser(email);
         return ResponseEntity.ok(portfolio);
     }
     @PostMapping

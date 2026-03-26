@@ -69,7 +69,9 @@ export class Dashboard implements OnInit {
   X = X;
 
   defaultPortfolio: PortfolioResponse | null = null;
+  portfolioName = ""
   fundBalance = 0;
+  totalGainLoss = 0;
   isAddingFunds = false;
 
   // Quick Trade
@@ -122,7 +124,9 @@ export class Dashboard implements OnInit {
     this.portfolioService.getDefaultPortfolio().subscribe({
       next: (portfolio) => {
         this.defaultPortfolio = portfolio;
+        this.portfolioName = portfolio.name;
         this.fundBalance = portfolio.cashBalance;
+        this.totalGainLoss = portfolio.totalGainLoss
         this.loadValuations(portfolio.id);
         this.loadHoldings();
         this.cdr.detectChanges();
@@ -255,14 +259,14 @@ export class Dashboard implements OnInit {
       const d = new Date(v.snapshotTime);
       return new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' }).format(d);
     });
-    const values = this.valuations.map((v) => v.totalValue);
+    const values = this.valuations.map((v) => v.profitLossAmount);
 
     this.chartData = {
       labels,
       datasets: [
         {
           data: values,
-          label: 'Portfolio Value',
+          label: 'profit/loss ',
           fill: true,
           tension: 0.35,
           borderColor: '#22c55e',

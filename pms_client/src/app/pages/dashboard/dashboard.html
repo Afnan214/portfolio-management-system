@@ -2,17 +2,15 @@
   <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
     <!-- Header -->
     <div class="mb-6 flex items-center justify-between">
-      <h1 class="text-2xl font-bold">Dashboard</h1>
+      <h1 class="text-2xl font-bold">{{portfolioName}}</h1>
       <div class="flex items-center gap-4">
         <div class="flex items-center gap-2 rounded-xl bg-white px-4 py-2 shadow-sm">
           <lucide-icon [img]="Wallet" [size]="16" class="text-slate-400"></lucide-icon>
           <span class="text-sm text-slate-500">Fund Balance</span>
           <span class="text-sm font-bold">${{ fundBalance | number: '1.2-2' }}</span>
         </div>
-        <button
-          (click)="openAddFundsModal()"
-          class="btn btn-sm gap-2 rounded-xl border-none bg-green-500 text-white hover:bg-green-600"
-        >
+        <button (click)="openAddFundsModal()"
+          class="btn btn-sm gap-2 rounded-xl border-none bg-green-500 text-white hover:bg-green-600">
           <lucide-icon [img]="Plus" [size]="16"></lucide-icon>
           Add Funds
         </button>
@@ -28,31 +26,21 @@
           <div class="card-body">
             <div class="flex items-center gap-2">
               <lucide-icon [img]="ChartLine" [size]="20" class="text-green-500"></lucide-icon>
-              <h2 class="card-title text-lg">Portfolio Value</h2>
+              <h2 class="card-title text-lg">Portfolio gain/loss</h2>
             </div>
-            <p class="text-3xl font-bold">${{ totalBalance | number: '1.2-2' }}</p>
-            <p
-              class="text-sm"
-              [class.text-green-500]="allTimeReturn >= 0"
-              [class.text-red-500]="allTimeReturn < 0"
-            >
+            <p class="text-3xl font-bold" [class.text-green-600]="totalGainLoss>=0"
+              [class.text-red-600]="totalGainLoss<0">${{ totalGainLoss| number: '1.2-2' }}</p>
+            <p class="text-sm" [class.text-green-500]="allTimeReturn >= 0" [class.text-red-500]="allTimeReturn < 0">
               {{ allTimeReturn >= 0 ? '+' : '' }}{{ allTimeReturn | number: '1.2-2' }}% all time
             </p>
             @if (valuations.length > 0) {
-              <div class="mt-4 h-64">
-                <canvas
-                  baseChart
-                  [type]="'line'"
-                  [data]="chartData"
-                  [options]="chartOptions"
-                ></canvas>
-              </div>
+            <div class="mt-4 h-64">
+              <canvas baseChart [type]="'line'" [data]="chartData" [options]="chartOptions"></canvas>
+            </div>
             } @else {
-              <div
-                class="mt-4 flex h-64 items-center justify-center rounded-xl bg-slate-50 text-sm text-slate-400"
-              >
-                No valuation history available yet.
-              </div>
+            <div class="mt-4 flex h-64 items-center justify-center rounded-xl bg-slate-50 text-sm text-slate-400">
+              No valuation history available yet.
+            </div>
             }
           </div>
         </div>
@@ -64,25 +52,20 @@
             <h2 class="card-title text-lg">Transaction History</h2>
             <div class="mt-2 flex flex-col gap-3">
               @for (tx of transactions; track tx.id) {
-                <div class="flex items-center gap-3">
-                  <div
-                    class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg"
-                    [ngClass]="getTransactionColor(tx.type)"
-                  >
-                    <lucide-icon [img]="getTransactionIcon(tx.type)" [size]="18"></lucide-icon>
-                  </div>
-                  <div class="min-w-0 flex-1">
-                    <p class="truncate text-sm font-semibold leading-tight">{{ tx.label }}</p>
-                    <p class="text-xs text-slate-400">{{ tx.date }}</p>
-                  </div>
-                  <p
-                    class="shrink-0 text-right text-sm font-semibold"
-                    [class.text-green-500]="tx.amount > 0"
-                    [class.text-red-500]="tx.amount < 0"
-                  >
-                    {{ tx.amount > 0 ? '+' : '' }}{{ tx.amount | number: '1.2-2' }}
-                  </p>
+              <div class="flex items-center gap-3">
+                <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg"
+                  [ngClass]="getTransactionColor(tx.type)">
+                  <lucide-icon [img]="getTransactionIcon(tx.type)" [size]="18"></lucide-icon>
                 </div>
+                <div class="min-w-0 flex-1">
+                  <p class="truncate text-sm font-semibold leading-tight">{{ tx.label }}</p>
+                  <p class="text-xs text-slate-400">{{ tx.date }}</p>
+                </div>
+                <p class="shrink-0 text-right text-sm font-semibold" [class.text-green-500]="tx.amount > 0"
+                  [class.text-red-500]="tx.amount < 0">
+                  {{ tx.amount > 0 ? '+' : '' }}{{ tx.amount | number: '1.2-2' }}
+                </p>
+              </div>
               }
             </div>
             <button class="btn btn-ghost btn-sm mt-2 w-full text-slate-500">See more</button>
@@ -99,7 +82,7 @@
             <div class="card-body p-4">
               <div class="flex items-center gap-2 text-slate-400">
                 <lucide-icon [img]="Wallet" [size]="16"></lucide-icon>
-                <span class="text-xs font-medium">Total Balance</span>
+                <span class="text-xs font-medium">Total Portfolio Value</span>
               </div>
               <p class="mt-1 text-xl font-bold">${{ totalBalance | number: '1.2-2' }}</p>
               <p class="text-xs text-slate-400">Updated just now</p>
@@ -113,33 +96,22 @@
                 <lucide-icon [img]="Percent" [size]="16"></lucide-icon>
                 <span class="text-xs font-medium">All-Time Return</span>
               </div>
-              <p class="mt-1 text-xl font-bold text-green-500">+{{ allTimeReturn }}%</p>
+              <p class="mt-1 text-xl font-bold" [class.text-green-500]="allTimeReturn>=0"
+                [class.text-red-500]="allTimeReturn<0">+{{ allTimeReturn }}%</p>
               <p class="text-xs text-slate-400">Since Mar 2026</p>
             </div>
           </div>
         </div>
 
         <!-- Quick Trade -->
-        <app-portfolio-quick-trade
-          class="block flex-1"
-          [tradeAction]="tradeAction"
-          [sideEnum]="Side"
-          [selectedStock]="selectedStock"
-          [tradeQuantity]="tradeQuantity"
-          [selectedHolding]="selectedHolding"
-          [sellableHoldings]="sellableHoldings"
-          [sellableSymbols]="sellableSymbols"
-          [maxSellQuantity]="maxSellQuantity"
-          [estimatedTradeTotal]="estimatedTradeTotal"
-          [canSubmitTrade]="canSubmitTrade"
-          [isSubmittingTrade]="isSubmittingTrade"
-          [tradeErrorMessage]="tradeErrorMessage"
-          [tradeSuccessMessage]="tradeSuccessMessage"
-          (tradeActionChange)="setTradeAction($event)"
-          (selectedStockChange)="onSelectedStockChange($event)"
-          (tradeQuantityChange)="onTradeQuantityChange($event)"
-          (submitTrade)="makeTrade()"
-        />
+        <app-portfolio-quick-trade class="block flex-1" [tradeAction]="tradeAction" [sideEnum]="Side"
+          [selectedStock]="selectedStock" [tradeQuantity]="tradeQuantity" [selectedHolding]="selectedHolding"
+          [sellableHoldings]="sellableHoldings" [sellableSymbols]="sellableSymbols" [maxSellQuantity]="maxSellQuantity"
+          [estimatedTradeTotal]="estimatedTradeTotal" [canSubmitTrade]="canSubmitTrade"
+          [isSubmittingTrade]="isSubmittingTrade" [tradeErrorMessage]="tradeErrorMessage"
+          [tradeSuccessMessage]="tradeSuccessMessage" (tradeActionChange)="setTradeAction($event)"
+          (selectedStockChange)="onSelectedStockChange($event)" (tradeQuantityChange)="onTradeQuantityChange($event)"
+          (submitTrade)="makeTrade()" />
       </div>
     </div>
   </div>
@@ -147,67 +119,47 @@
 
 <!-- Add Funds Modal -->
 @if (showAddFundsModal) {
-  <div
-    class="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
-    (click)="closeAddFundsModal()"
-  >
-    <div
-      class="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl"
-      (click)="$event.stopPropagation()"
-    >
-      <div class="flex items-center justify-between">
-        <h3 class="text-lg font-bold">Add Funds</h3>
-        <button (click)="closeAddFundsModal()" class="btn btn-ghost btn-sm btn-circle">
-          <lucide-icon [img]="X" [size]="18"></lucide-icon>
-        </button>
-      </div>
+<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40" (click)="closeAddFundsModal()">
+  <div class="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl" (click)="$event.stopPropagation()">
+    <div class="flex items-center justify-between">
+      <h3 class="text-lg font-bold">Add Funds</h3>
+      <button (click)="closeAddFundsModal()" class="btn btn-ghost btn-sm btn-circle">
+        <lucide-icon [img]="X" [size]="18"></lucide-icon>
+      </button>
+    </div>
 
-      <p class="mt-1 text-sm text-slate-400">
-        Current balance:
-        <span class="font-semibold text-slate-700">${{ fundBalance | number: '1.2-2' }}</span>
-      </p>
+    <p class="mt-1 text-sm text-slate-400">
+      Current balance:
+      <span class="font-semibold text-slate-700">${{ fundBalance | number: '1.2-2' }}</span>
+    </p>
 
-      <div class="mt-5">
-        <label class="text-sm font-medium text-slate-600">Amount</label>
-        <div class="relative mt-1">
-          <span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-slate-400">$</span>
-          <input
-            type="number"
-            [(ngModel)]="addFundsAmount"
-            placeholder="0.00"
-            min="0"
-            class="input input-bordered w-full pl-7"
-          />
-        </div>
-      </div>
-
-      <div class="mt-4 flex gap-2">
-        @for (preset of [100, 500, 1000, 5000]; track preset) {
-          <button
-            (click)="addFundsAmount = preset"
-            class="btn btn-sm flex-1 rounded-lg border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100"
-          >
-            ${{ preset | number }}
-          </button>
-        }
-      </div>
-
-      <div class="mt-6 flex gap-3">
-        <button
-          (click)="closeAddFundsModal()"
-          [disabled]="isAddingFunds"
-          class="btn btn-ghost flex-1 rounded-xl"
-        >
-          Cancel
-        </button>
-        <button
-          (click)="confirmAddFunds()"
-          [disabled]="isAddingFunds || !addFundsAmount || addFundsAmount <= 0"
-          class="btn flex-1 rounded-xl border-none bg-green-500 text-white hover:bg-green-600 disabled:opacity-50"
-        >
-          {{ isAddingFunds ? 'Adding...' : 'Confirm' }}
-        </button>
+    <div class="mt-5">
+      <label class="text-sm font-medium text-slate-600">Amount</label>
+      <div class="relative mt-1">
+        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-slate-400">$</span>
+        <input type="number" [(ngModel)]="addFundsAmount" placeholder="0.00" min="0"
+          class="input input-bordered w-full pl-7" />
       </div>
     </div>
+
+    <div class="mt-4 flex gap-2">
+      @for (preset of [100, 500, 1000, 5000]; track preset) {
+      <button (click)="addFundsAmount = preset"
+        class="btn btn-sm flex-1 rounded-lg border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100">
+        ${{ preset | number }}
+      </button>
+      }
+    </div>
+
+    <div class="mt-6 flex gap-3">
+      <button (click)="closeAddFundsModal()" [disabled]="isAddingFunds" class="btn btn-ghost flex-1 rounded-xl">
+        Cancel
+      </button>
+      <button (click)="confirmAddFunds()" [disabled]="isAddingFunds || !addFundsAmount || addFundsAmount <= 0"
+        class="btn flex-1 rounded-xl border-none bg-green-500 text-white hover:bg-green-600 disabled:opacity-50">
+        {{ isAddingFunds ? 'Adding...' : 'Confirm' }}
+      </button>
+    </div>
   </div>
+</div>
 }

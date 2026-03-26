@@ -2,11 +2,12 @@ import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { PortfolioResponse } from '../../../../../services/portfolio-service';
+import { ArrowDownRight, ArrowUpRight, LucideAngularModule } from 'lucide-angular';
 
 @Component({
   selector: 'app-portfolio-summary-card',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, LucideAngularModule],
   templateUrl: './portfolio-summary-card.html',
 })
 export class PortfolioSummaryCard {
@@ -17,10 +18,13 @@ export class PortfolioSummaryCard {
 
   showAddFundsForm = false;
   fundAmount: number | null = null;
+  ArrowUpRight = ArrowUpRight;
+  ArrowDownRight = ArrowDownRight;
 
   submitAddFunds(): void {
     if (this.fundAmount && this.fundAmount > 0) {
       this.addFunds.emit(this.fundAmount);
+      this.showAddFundsForm = false
     }
   }
 

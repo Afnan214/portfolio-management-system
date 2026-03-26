@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -31,33 +32,29 @@ public class PortfolioService {
         this.portfolioValuationRepository = portfolioValuationRepository;
         this.transactionService = transactionService;
     }
-    public List<Portfolio> getPortfolioByUser(String email){
+    public List<PortfolioResponse> getPortfolioByUser(String email){
         User user = userRepository.findByEmail(email).orElseThrow(()-> new RuntimeException("User does not exist"));
-        return portfolioRepository.findByUserId(user.getId());
+        return portfolioRepository.findByUserId(user.getId())
+                .stream()
+                .map(this::toPortfolioResponse)
+                .collect(Collectors.toList());
     }
     public PortfolioResponse getPortfolioById(Long id){
         Portfolio portfolio = portfolioRepository.findById(id)
                 .orElseThrow(()-> new RuntimeException(("portfolio not found")));
-        return new PortfolioResponse(
-                portfolio.getId(),
-                portfolio.getName(),
-                portfolio.getCashBalance(),
-                portfolio.getTotalMarketValue(),
-                portfolio.getTotalGainLoss(),
-                portfolio.getTotalGainLossPercentage(),
-                portfolio.isDefault(),
-                portfolio.getCreatedAt(),
-                portfolio.getUpdatedAt());
+        return toPortfolioResponse(portfolio);
     }
     public List<PortfolioValuation> getPortfolioValuationByIId(long id){
         return portfolioValuationRepository.findByPortfolio_IdOrderBySnapshotTimeAsc(id);
     }
-    public Portfolio getDefaultPortfolioByUser(String email){
+    public PortfolioResponse getDefaultPortfolioByUser(String email){
         User user =  userRepository.findByEmail(email)
                 .orElseThrow(()->new RuntimeException("User cannot be found"));
 
-        return portfolioRepository.findByUserIdAndIsDefault(user.getId(), true)
+        Portfolio portfolio = portfolioRepository.findByUserIdAndIsDefault(user.getId(), true)
                 .orElse(null);
+
+        return portfolio == null ? null : toPortfolioResponse(portfolio);
     }
     public PortfolioResponse createPortfolio(CreatePortfolioRequest createPortfolioRequest, String email){
         User user =  userRepository.findByEmail(email)
@@ -84,17 +81,7 @@ public class PortfolioService {
             transactionService.logTransaction(newPortfolio, newPortfolio.getCashBalance(), TransactionType.ADD_FUNDS);
         }
 
-        return new PortfolioResponse(
-                newPortfolio.getId(),
-                newPortfolio.getName(),
-                newPortfolio.getCashBalance(),
-                newPortfolio.getTotalMarketValue(),
-                newPortfolio.getTotalGainLoss(),
-                newPortfolio.getTotalGainLossPercentage(),
-                newPortfolio.isDefault(),
-                newPortfolio.getCreatedAt(),
-                newPortfolio.getUpdatedAt()
-        );
+        return toPortfolioResponse(newPortfolio);
     }
     public PortfolioResponse updatePortfolioById(Long id, UpdatePortfolioRequest updatePortfolioRequest, String email){
         User user = userRepository.findByEmail(email).orElseThrow(()->new RuntimeException("This user does not exist"));
@@ -124,17 +111,7 @@ public class PortfolioService {
         } else if (difference.compareTo(BigDecimal.ZERO) < 0) {
             transactionService.logTransaction(updatedPortfolio, difference.abs(), TransactionType.WITHDRAWAL);
         }
-        return new PortfolioResponse(
-                updatedPortfolio.getId(),
-                updatedPortfolio.getName(),
-                updatedPortfolio.getCashBalance(),
-                updatedPortfolio.getTotalMarketValue(),
-                updatedPortfolio.getTotalGainLoss(),
-                updatedPortfolio.getTotalGainLossPercentage(),
-                updatedPortfolio.isDefault(),
-                updatedPortfolio.getCreatedAt(),
-                updatedPortfolio.getUpdatedAt()
-        );
+        return toPortfolioResponse(updatedPortfolio);
     }
     public PortfolioResponse addFunds(Long id, BigDecimal amount) {
         Portfolio portfolio = portfolioRepository.findById(id)
@@ -145,17 +122,7 @@ public class PortfolioService {
 
         transactionService.logTransaction(updatedPortfolio, amount, TransactionType.ADD_FUNDS);
 
-        return new PortfolioResponse(
-                updatedPortfolio.getId(),
-                updatedPortfolio.getName(),
-                updatedPortfolio.getCashBalance(),
-                updatedPortfolio.getTotalMarketValue(),
-                updatedPortfolio.getTotalGainLoss(),
-                updatedPortfolio.getTotalGainLossPercentage(),
-                updatedPortfolio.isDefault(),
-                updatedPortfolio.getCreatedAt(),
-                updatedPortfolio.getUpdatedAt()
-        );
+        return toPortfolioResponse(updatedPortfolio);
     }
 
     public void deletePortfolioById(Long id){
@@ -164,6 +131,20 @@ public class PortfolioService {
 
         portfolioRepository.delete(portfolio);
 
+    }
+
+    private PortfolioResponse toPortfolioResponse(Portfolio portfolio) {
+        return new PortfolioResponse(
+                portfolio.getId(),
+                portfolio.getName(),
+                portfolio.getCashBalance(),
+                portfolio.getTotalMarketValue(),
+                portfolio.getTotalGainLoss(),
+                portfolio.getTotalGainLossPercentage(),
+                portfolio.isDefault(),
+                portfolio.getCreatedAt(),
+                portfolio.getUpdatedAt()
+        );
     }
 
 

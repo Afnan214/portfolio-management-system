@@ -42,18 +42,13 @@
       </div>
 
       @if (hasValuationHistory) {
-        <div class="mt-6 h-72">
-          <canvas
-            baseChart
-            [data]="valueHistoryChartData"
-            [options]="valueHistoryChartOptions"
-            [type]="'line'"
-          ></canvas>
-        </div>
+      <div class="mt-6 h-72">
+        <canvas baseChart [data]="valueHistoryChartData" [options]="valueHistoryChartOptions" [type]="'line'"></canvas>
+      </div>
       } @else {
-        <div class="mt-6 rounded-xl bg-slate-50 p-4 text-sm text-slate-500">
-          No valuation history is available yet for this portfolio.
-        </div>
+      <div class="mt-6 rounded-xl bg-slate-50 p-4 text-sm text-slate-500">
+        No valuation history is available yet for this portfolio.
+      </div>
       }
     </div>
 
@@ -65,28 +60,20 @@
             Percentage gain or loss at each valuation snapshot.
           </p>
         </div>
-        <p
-          class="text-sm font-semibold"
-          [class.text-green-600]="unrealizedGain >= 0"
-          [class.text-red-600]="unrealizedGain < 0"
-        >
+        <p class="text-sm font-semibold" [class.text-green-600]="unrealizedGain >= 0"
+          [class.text-red-600]="unrealizedGain < 0">
           {{ unrealizedGain >= 0 ? '+' : '' }}{{ unrealizedGain | currency }}
         </p>
       </div>
 
       @if (hasValuationHistory) {
-        <div class="mt-6 h-72">
-          <canvas
-            baseChart
-            [data]="performanceChartData"
-            [options]="performanceChartOptions"
-            [type]="'bar'"
-          ></canvas>
-        </div>
+      <div class="mt-6 h-72">
+        <canvas baseChart [data]="performanceChartData" [options]="performanceChartOptions" [type]="'bar'"></canvas>
+      </div>
       } @else {
-        <div class="mt-6 rounded-xl bg-slate-50 p-4 text-sm text-slate-500">
-          Profit and loss history will appear here once valuation snapshots exist.
-        </div>
+      <div class="mt-6 rounded-xl bg-slate-50 p-4 text-sm text-slate-500">
+        Profit and loss history will appear here once valuation snapshots exist.
+      </div>
       }
     </div>
   </div>
@@ -108,33 +95,30 @@
 
         <div class="flex items-center justify-between border-t border-base-300 pt-4">
           <span class="text-sm font-medium text-slate-600">Unrealized Gain / Loss</span>
-          <span
-            class="text-lg font-semibold"
-            [class.text-green-600]="unrealizedGain >= 0"
-            [class.text-red-600]="unrealizedGain < 0"
-          >
+          <span class="text-lg font-semibold" [class.text-green-600]="unrealizedGain >= 0"
+            [class.text-red-600]="unrealizedGain < 0">
             {{ unrealizedGain >= 0 ? '+' : '' }}{{ unrealizedGain | currency }}
           </span>
         </div>
       </div>
 
       @if (topHolding) {
-        <div class="mt-6 rounded-xl bg-slate-50 p-4">
-          <p class="text-xs font-medium uppercase tracking-wide text-slate-400">Largest Position</p>
-          <div class="mt-2 flex items-center justify-between gap-3">
-            <div>
-              <p class="text-base font-semibold text-slate-900">{{ topHolding.stock.symbol }}</p>
-              <p class="text-sm text-slate-500">
-                {{ topHolding.quantity }} share{{ topHolding.quantity === 1 ? '' : 's' }}
-              </p>
-            </div>
-            <p class="text-base font-semibold text-slate-900">{{ topHoldingValue | currency }}</p>
+      <div class="mt-6 rounded-xl bg-slate-50 p-4">
+        <p class="text-xs font-medium uppercase tracking-wide text-slate-400">Largest Position</p>
+        <div class="mt-2 flex items-center justify-between gap-3">
+          <div>
+            <p class="text-base font-semibold text-slate-900">{{ topHolding.stock.symbol }}</p>
+            <p class="text-sm text-slate-500">
+              {{ topHolding.quantity }} share{{ topHolding.quantity === 1 ? '' : 's' }}
+            </p>
           </div>
+          <p class="text-base font-semibold text-slate-900">{{ topHoldingValue | currency }}</p>
         </div>
+      </div>
       }
     </div>
 
-    <div class="rounded-2xl border border-base-300 bg-base-100 p-6 shadow-sm">
+    <div class="rounded-2xl border border-base-300 bg-base-100 p-6 shadow-sm h-fit">
       <h3 class="text-lg font-semibold text-slate-900">Trade Mix</h3>
 
       <div class="mt-5 grid gap-4 sm:grid-cols-2">
@@ -149,12 +133,7 @@
         </div>
       </div>
 
-      <div class="mt-6 rounded-xl bg-slate-50 p-4">
-        <p class="text-sm text-slate-500">
-          This tab summarizes the holdings and transaction data for portfolio
-          <span class="font-semibold text-slate-700">{{ portfolio.id }}</span>.
-        </p>
-      </div>
+
     </div>
   </div>
 </div>

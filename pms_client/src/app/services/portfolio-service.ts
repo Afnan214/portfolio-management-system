@@ -13,7 +13,11 @@ export interface PortfolioResponse {
   id: number;
   name: string;
   cashBalance: number;
+  totalMarketValue: number;
+  totalGainLoss: number;
+  totalGainLossPercentage: number;
   isDefault: boolean;
+
 }
 
 export interface PortfolioValuationResponse {
