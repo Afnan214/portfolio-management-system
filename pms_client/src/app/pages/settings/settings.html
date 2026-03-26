@@ -1,0 +1,342 @@
+<section class="settings-page min-h-screen bg-[#f6f8f6] text-slate-800">
+  <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+
+    <!-- Header -->
+    <div class="mb-6">
+      <h1 class="font-title text-2xl font-bold">Settings</h1>
+      <p class="mt-1 text-sm text-slate-400">Manage your account preferences and configuration</p>
+    </div>
+
+    <!-- Layout: sidebar tabs + content -->
+    <div class="flex flex-col gap-6 lg:flex-row">
+
+      <!-- Tab Navigation -->
+      <div class="w-full shrink-0 lg:w-56">
+        <nav class="flex gap-1 overflow-x-auto lg:flex-col">
+          @for (tab of tabs; track tab.id) {
+          <button
+            (click)="activeTab = tab.id"
+            class="settings-tab flex items-center gap-2.5 whitespace-nowrap rounded-xl px-4 py-2.5 text-sm font-medium transition-all duration-150"
+            [class.bg-white]="activeTab === tab.id"
+            [class.shadow-sm]="activeTab === tab.id"
+            [class.text-green-600]="activeTab === tab.id"
+            [class.text-slate-500]="activeTab !== tab.id"
+            [class.hover:bg-white/60]="activeTab !== tab.id"
+          >
+            <lucide-icon [img]="tab.icon" [size]="18" class="shrink-0"></lucide-icon>
+            <span>{{ tab.label }}</span>
+          </button>
+          }
+        </nav>
+      </div>
+
+      <!-- Content Area -->
+      <div class="min-w-0 flex-1">
+
+        <!-- General -->
+        @if (activeTab === 'general') {
+        <div class="settings-panel space-y-5">
+          <div class="rounded-xl bg-white p-6 shadow-sm">
+            <h2 class="text-base font-semibold text-slate-800">Regional Preferences</h2>
+            <p class="mt-0.5 text-xs text-slate-400">Configure your language, timezone, and currency</p>
+
+            <div class="mt-5 grid grid-cols-1 gap-5 md:grid-cols-2">
+              <div>
+                <label class="text-xs font-medium text-slate-500">Language</label>
+                <select [(ngModel)]="language" class="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 focus:border-green-400 focus:outline-none focus:ring-1 focus:ring-green-400">
+                  <option value="en">English</option>
+                  <option value="fr">Fran&ccedil;ais</option>
+                  <option value="es">Espa&ntilde;ol</option>
+                  <option value="de">Deutsch</option>
+                  <option value="ja">日本語</option>
+                </select>
+              </div>
+              <div>
+                <label class="text-xs font-medium text-slate-500">Timezone</label>
+                <select [(ngModel)]="timezone" class="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 focus:border-green-400 focus:outline-none focus:ring-1 focus:ring-green-400">
+                  <option value="America/New_York">Eastern Time (ET)</option>
+                  <option value="America/Chicago">Central Time (CT)</option>
+                  <option value="America/Denver">Mountain Time (MT)</option>
+                  <option value="America/Los_Angeles">Pacific Time (PT)</option>
+                  <option value="Europe/London">GMT (London)</option>
+                  <option value="Europe/Paris">CET (Paris)</option>
+                  <option value="Asia/Tokyo">JST (Tokyo)</option>
+                </select>
+              </div>
+              <div>
+                <label class="text-xs font-medium text-slate-500">Default Currency</label>
+                <select [(ngModel)]="currency" class="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 focus:border-green-400 focus:outline-none focus:ring-1 focus:ring-green-400">
+                  <option value="USD">USD ($)</option>
+                  <option value="EUR">EUR (&euro;)</option>
+                  <option value="GBP">GBP (&pound;)</option>
+                  <option value="JPY">JPY (&yen;)</option>
+                  <option value="CAD">CAD (C$)</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="rounded-xl bg-white p-6 shadow-sm">
+            <h2 class="text-base font-semibold text-slate-800">Data & Privacy</h2>
+            <p class="mt-0.5 text-xs text-slate-400">Control how your data is used</p>
+
+            <div class="mt-5 space-y-4">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-sm font-medium text-slate-700">Share usage analytics</p>
+                  <p class="text-xs text-slate-400">Help us improve by sharing anonymous usage data</p>
+                </div>
+                <button (click)="compactMode = !compactMode" class="text-slate-400 transition-colors hover:text-green-500">
+                  <lucide-icon [img]="compactMode ? ToggleRight : ToggleLeft" [size]="32"
+                    [class.text-green-500]="compactMode"></lucide-icon>
+                </button>
+              </div>
+              <div class="border-t border-slate-50"></div>
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-sm font-medium text-slate-700">Personalized recommendations</p>
+                  <p class="text-xs text-slate-400">Receive stock suggestions based on your activity</p>
+                </div>
+                <button class="text-green-500">
+                  <lucide-icon [img]="ToggleRight" [size]="32"></lucide-icon>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex justify-end">
+            <button class="btn btn-sm rounded-lg border-none bg-green-500 px-6 text-white hover:bg-green-600">Save Changes</button>
+          </div>
+        </div>
+        }
+
+        <!-- Notifications -->
+        @if (activeTab === 'notifications') {
+        <div class="settings-panel space-y-5">
+          <div class="rounded-xl bg-white p-6 shadow-sm">
+            <h2 class="text-base font-semibold text-slate-800">Notification Preferences</h2>
+            <p class="mt-0.5 text-xs text-slate-400">Choose what notifications you receive</p>
+
+            <div class="mt-5 space-y-1">
+              @for (notif of notifications; track notif.label; let i = $index) {
+              <div class="flex items-center justify-between rounded-lg px-3 py-3 transition-colors hover:bg-slate-50/50">
+                <div>
+                  <p class="text-sm font-medium text-slate-700">{{ notif.label }}</p>
+                  <p class="text-xs text-slate-400">{{ notif.description }}</p>
+                </div>
+                <button (click)="toggleNotification(i)" class="transition-colors" [class.text-green-500]="notif.enabled" [class.text-slate-300]="!notif.enabled">
+                  <lucide-icon [img]="notif.enabled ? ToggleRight : ToggleLeft" [size]="32"></lucide-icon>
+                </button>
+              </div>
+              @if (i < notifications.length - 1) {
+              <div class="border-t border-slate-50"></div>
+              }
+              }
+            </div>
+          </div>
+
+          <div class="rounded-xl bg-white p-6 shadow-sm">
+            <h2 class="text-base font-semibold text-slate-800">Quiet Hours</h2>
+            <p class="mt-0.5 text-xs text-slate-400">Pause non-critical notifications during specific hours</p>
+
+            <div class="mt-5 grid grid-cols-2 gap-4">
+              <div>
+                <label class="text-xs font-medium text-slate-500">From</label>
+                <input type="time" value="22:00" class="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 focus:border-green-400 focus:outline-none focus:ring-1 focus:ring-green-400" />
+              </div>
+              <div>
+                <label class="text-xs font-medium text-slate-500">To</label>
+                <input type="time" value="07:00" class="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 focus:border-green-400 focus:outline-none focus:ring-1 focus:ring-green-400" />
+              </div>
+            </div>
+          </div>
+
+          <div class="flex justify-end">
+            <button class="btn btn-sm rounded-lg border-none bg-green-500 px-6 text-white hover:bg-green-600">Save Changes</button>
+          </div>
+        </div>
+        }
+
+        <!-- Security -->
+        @if (activeTab === 'security') {
+        <div class="settings-panel space-y-5">
+          <div class="rounded-xl bg-white p-6 shadow-sm">
+            <h2 class="text-base font-semibold text-slate-800">Password</h2>
+            <p class="mt-0.5 text-xs text-slate-400">Update your password regularly to keep your account secure</p>
+
+            <div class="mt-5 space-y-4">
+              <div>
+                <label class="text-xs font-medium text-slate-500">Current Password</label>
+                <input type="password" placeholder="Enter current password" class="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 focus:border-green-400 focus:outline-none focus:ring-1 focus:ring-green-400" />
+              </div>
+              <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div>
+                  <label class="text-xs font-medium text-slate-500">New Password</label>
+                  <input type="password" placeholder="Enter new password" class="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 focus:border-green-400 focus:outline-none focus:ring-1 focus:ring-green-400" />
+                </div>
+                <div>
+                  <label class="text-xs font-medium text-slate-500">Confirm New Password</label>
+                  <input type="password" placeholder="Confirm new password" class="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 focus:border-green-400 focus:outline-none focus:ring-1 focus:ring-green-400" />
+                </div>
+              </div>
+              <div>
+                <button class="btn btn-sm rounded-lg border-none bg-green-500 px-6 text-white hover:bg-green-600">Update Password</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="rounded-xl bg-white p-6 shadow-sm">
+            <h2 class="text-base font-semibold text-slate-800">Two-Factor Authentication</h2>
+            <p class="mt-0.5 text-xs text-slate-400">Add an extra layer of security to your account</p>
+
+            <div class="mt-5 flex items-center justify-between rounded-lg border border-slate-100 p-4">
+              <div class="flex items-center gap-3">
+                <div class="flex h-10 w-10 items-center justify-center rounded-lg" [class.bg-green-50]="twoFactorEnabled" [class.bg-slate-50]="!twoFactorEnabled">
+                  <lucide-icon [img]="Smartphone" [size]="18" [class.text-green-600]="twoFactorEnabled" [class.text-slate-400]="!twoFactorEnabled"></lucide-icon>
+                </div>
+                <div>
+                  <p class="text-sm font-medium text-slate-700">Authenticator App</p>
+                  <p class="text-xs" [class.text-green-500]="twoFactorEnabled" [class.text-slate-400]="!twoFactorEnabled">
+                    {{ twoFactorEnabled ? 'Enabled' : 'Not configured' }}
+                  </p>
+                </div>
+              </div>
+              <button (click)="twoFactorEnabled = !twoFactorEnabled"
+                class="btn btn-sm rounded-lg"
+                [class.border-red-200]="twoFactorEnabled" [class.text-red-500]="twoFactorEnabled"
+                [class.border-green-200]="!twoFactorEnabled" [class.text-green-600]="!twoFactorEnabled">
+                {{ twoFactorEnabled ? 'Disable' : 'Enable' }}
+              </button>
+            </div>
+          </div>
+
+          <div class="rounded-xl bg-white p-6 shadow-sm">
+            <h2 class="text-base font-semibold text-slate-800">Session Settings</h2>
+            <p class="mt-0.5 text-xs text-slate-400">Manage auto-logout and active sessions</p>
+
+            <div class="mt-5">
+              <label class="text-xs font-medium text-slate-500">Auto-logout after inactivity</label>
+              <select [(ngModel)]="sessionTimeout" class="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 focus:border-green-400 focus:outline-none focus:ring-1 focus:ring-green-400 md:w-64">
+                <option value="15">15 minutes</option>
+                <option value="30">30 minutes</option>
+                <option value="60">1 hour</option>
+                <option value="120">2 hours</option>
+                <option value="never">Never</option>
+              </select>
+            </div>
+
+            <div class="mt-5">
+              <h3 class="text-sm font-medium text-slate-700">Active Sessions</h3>
+              <div class="mt-3 space-y-3">
+                <div class="flex items-center justify-between rounded-lg border border-slate-100 p-3">
+                  <div class="flex items-center gap-3">
+                    <lucide-icon [img]="Monitor" [size]="18" class="text-green-500"></lucide-icon>
+                    <div>
+                      <p class="text-sm font-medium text-slate-700">MacBook Pro — Chrome</p>
+                      <p class="text-xs text-slate-400">New York, US · Current session</p>
+                    </div>
+                  </div>
+                  <span class="rounded-full bg-green-50 px-2 py-0.5 text-xs font-medium text-green-600">Active</span>
+                </div>
+                <div class="flex items-center justify-between rounded-lg border border-slate-100 p-3">
+                  <div class="flex items-center gap-3">
+                    <lucide-icon [img]="Smartphone" [size]="18" class="text-slate-400"></lucide-icon>
+                    <div>
+                      <p class="text-sm font-medium text-slate-700">iPhone 15 — Safari</p>
+                      <p class="text-xs text-slate-400">New York, US · 2 hours ago</p>
+                    </div>
+                  </div>
+                  <button class="text-xs font-medium text-red-400 hover:text-red-500">Revoke</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        }
+
+        <!-- Appearance -->
+        @if (activeTab === 'appearance') {
+        <div class="settings-panel space-y-5">
+          <div class="rounded-xl bg-white p-6 shadow-sm">
+            <h2 class="text-base font-semibold text-slate-800">Theme</h2>
+            <p class="mt-0.5 text-xs text-slate-400">Choose your preferred color scheme</p>
+
+            <div class="mt-5 grid grid-cols-3 gap-3">
+              <button (click)="theme = 'light'"
+                class="flex flex-col items-center gap-2 rounded-xl border-2 p-4 transition-all"
+                [class.border-green-500]="theme === 'light'" [class.border-slate-100]="theme !== 'light'">
+                <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-50">
+                  <lucide-icon [img]="Sun" [size]="20" class="text-amber-500"></lucide-icon>
+                </div>
+                <span class="text-xs font-medium" [class.text-green-600]="theme === 'light'" [class.text-slate-500]="theme !== 'light'">Light</span>
+              </button>
+              <button (click)="theme = 'dark'"
+                class="flex flex-col items-center gap-2 rounded-xl border-2 p-4 transition-all"
+                [class.border-green-500]="theme === 'dark'" [class.border-slate-100]="theme !== 'dark'">
+                <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-800">
+                  <lucide-icon [img]="Moon" [size]="20" class="text-slate-300"></lucide-icon>
+                </div>
+                <span class="text-xs font-medium" [class.text-green-600]="theme === 'dark'" [class.text-slate-500]="theme !== 'dark'">Dark</span>
+              </button>
+              <button (click)="theme = 'system'"
+                class="flex flex-col items-center gap-2 rounded-xl border-2 p-4 transition-all"
+                [class.border-green-500]="theme === 'system'" [class.border-slate-100]="theme !== 'system'">
+                <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50">
+                  <lucide-icon [img]="Monitor" [size]="20" class="text-blue-500"></lucide-icon>
+                </div>
+                <span class="text-xs font-medium" [class.text-green-600]="theme === 'system'" [class.text-slate-500]="theme !== 'system'">System</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="rounded-xl bg-white p-6 shadow-sm">
+            <h2 class="text-base font-semibold text-slate-800">Display</h2>
+            <p class="mt-0.5 text-xs text-slate-400">Customize how the interface looks and feels</p>
+
+            <div class="mt-5 space-y-4">
+              <div>
+                <label class="text-xs font-medium text-slate-500">Font Size</label>
+                <div class="mt-2 flex gap-2">
+                  @for (size of ['small', 'medium', 'large']; track size) {
+                  <button (click)="fontSize = size"
+                    class="rounded-lg border px-4 py-2 text-sm font-medium capitalize transition-all"
+                    [class.border-green-500]="fontSize === size" [class.bg-green-50]="fontSize === size" [class.text-green-600]="fontSize === size"
+                    [class.border-slate-200]="fontSize !== size" [class.text-slate-500]="fontSize !== size">
+                    {{ size }}
+                  </button>
+                  }
+                </div>
+              </div>
+              <div class="border-t border-slate-50"></div>
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-sm font-medium text-slate-700">Compact mode</p>
+                  <p class="text-xs text-slate-400">Reduce spacing for denser information display</p>
+                </div>
+                <button (click)="compactMode = !compactMode" class="transition-colors" [class.text-green-500]="compactMode" [class.text-slate-300]="!compactMode">
+                  <lucide-icon [img]="compactMode ? ToggleRight : ToggleLeft" [size]="32"></lucide-icon>
+                </button>
+              </div>
+              <div class="border-t border-slate-50"></div>
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-sm font-medium text-slate-700">Animations</p>
+                  <p class="text-xs text-slate-400">Enable smooth transitions and micro-interactions</p>
+                </div>
+                <button (click)="animationsEnabled = !animationsEnabled" class="transition-colors" [class.text-green-500]="animationsEnabled" [class.text-slate-300]="!animationsEnabled">
+                  <lucide-icon [img]="animationsEnabled ? ToggleRight : ToggleLeft" [size]="32"></lucide-icon>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex justify-end">
+            <button class="btn btn-sm rounded-lg border-none bg-green-500 px-6 text-white hover:bg-green-600">Save Changes</button>
+          </div>
+        </div>
+        }
+
+      </div>
+    </div>
+  </div>
+</section>

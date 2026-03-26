@@ -1,13 +1,11 @@
 import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Sidebar } from '../../components/sidebar/sidebar';
 import { BaseChartDirective } from 'ng2-charts';
 import { ChartConfiguration } from 'chart.js';
 import {
   LucideAngularModule,
   ChartLine,
-  EllipsisVertical,
   HandCoins,
   ArrowBigUp,
   BanknoteArrowUp,
@@ -25,11 +23,12 @@ import {
   TransactionType,
 } from '../../services/transaction-service';
 import { AuthService } from '../../auth/auth-service';
+import { WatchlistPanel } from '../../components/watchlist-panel/watchlist-panel';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule, BaseChartDirective, LucideAngularModule],
+  imports: [CommonModule, FormsModule, BaseChartDirective, LucideAngularModule, WatchlistPanel],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css',
 })
@@ -42,7 +41,6 @@ export class Dashboard implements OnInit {
 
   // Lucide icons
   ChartLine = ChartLine;
-  EllipsisVertical = EllipsisVertical;
   HandCoins = HandCoins;
   ArrowBigUp = ArrowBigUp;
   BanknoteArrowUp = BanknoteArrowUp;
@@ -66,16 +64,6 @@ export class Dashboard implements OnInit {
   // Mock data
   totalBalance = 48250.75;
   allTimeReturn = 12.4;
-
-  watchList = [
-    { symbol: 'AAPL', name: 'Apple Inc.', price: 189.84, changePercent: 1.23 },
-    { symbol: 'GOOGL', name: 'Alphabet Inc.', price: 141.56, changePercent: -0.45 },
-    { symbol: 'MSFT', name: 'Microsoft Corp.', price: 378.91, changePercent: 0.87 },
-    { symbol: 'AMZN', name: 'Amazon.com Inc.', price: 185.07, changePercent: 2.15 },
-    { symbol: 'TSLA', name: 'Tesla Inc.', price: 248.42, changePercent: -1.78 },
-    { symbol: 'NVDA', name: 'NVIDIA Corp.', price: 495.22, changePercent: 3.41 },
-    { symbol: 'META', name: 'Meta Platforms', price: 505.75, changePercent: 0.62 },
-  ];
 
   transactions: { id: number; type: string; label: string; date: string; amount: number }[] = [];
 
@@ -208,9 +196,5 @@ export class Dashboard implements OnInit {
       this.fundBalance += this.addFundsAmount;
       this.closeAddFundsModal();
     }
-  }
-
-  getInitials(symbol: string): string {
-    return symbol.substring(0, 2);
   }
 }
