@@ -9,11 +9,11 @@ import { HoldingResponse } from '../../../../../services/holdings-service';
   templateUrl: './portfolio-holdings-list.html',
 })
 export class PortfolioHoldingsList {
-
   @Input() eyebrow = 'Holdings';
   @Input() title = 'Holdings';
   @Input() description = '';
   @Input() holdings: HoldingResponse[] = [];
+  @Input() currentPrices: Record<string, number> = {};
   @Input() emptyTitle = 'No holdings yet';
   @Input() emptyDescription = 'Holdings will appear here.';
   @Input() showViewAll = false;
@@ -25,9 +25,12 @@ export class PortfolioHoldingsList {
     return `https://assets.parqet.com/logos/symbol/${base}?format=jpg`;
   }
 
+  getCurrentPrice(symbol: string): number {
+    return this.currentPrices[symbol.toUpperCase()] ?? 0;
+  }
+
   getMarketValue(holding: HoldingResponse): number {
-    console.log(holding)
-    return holding.quantity * (holding.stock.currentPrice ?? 0);
+    return holding.quantity * this.getCurrentPrice(holding.stock.symbol);
   }
 
   getUnrealizedGain(holding: HoldingResponse): number {

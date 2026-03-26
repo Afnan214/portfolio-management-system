@@ -1,12 +1,13 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectorRef, Component, inject, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { take } from 'rxjs';
 import {
   PortfolioService,
   PortfolioResponse,
   PortfolioValuationResponse,
 } from '../../../services/portfolio-service';
-import { StockQuote } from '../../../services/stock-service';
+import { StockQuote, StockService } from '../../../services/stock-service';
 import {
   CreateTradeRequest,
   Side,
@@ -43,6 +44,7 @@ export class PortfolioDetails implements OnInit {
   private portfolioService = inject(PortfolioService);
   private tradeService = inject(TradeService);
   private holdingService = inject(HoldingService);
+  private stockService = inject(StockService);
   private cdr = inject(ChangeDetectorRef);
 
   readonly tabs: Array<{ id: PortfolioDetailsTab; label: string }> = [
@@ -55,6 +57,7 @@ export class PortfolioDetails implements OnInit {
   recentTrades: TradeResponse[] = [];
   holdings: HoldingResponse[] = [];
   valuations: PortfolioValuationResponse[] = [];
+  currentPrices: Record<string, number> = {};
 
   isSubmittingTrade = false;
   tradeErrorMessage = '';
@@ -209,7 +212,7 @@ export class PortfolioDetails implements OnInit {
   }
 
   getMarketValue(holding: HoldingResponse): number {
-    return holding.quantity * (holding.stock.currentPrice ?? 0);
+    return holding.quantity * this.getCurrentPrice(holding.stock.symbol);
   }
 
   getUnrealizedGain(holding: HoldingResponse): number {
@@ -300,6 +303,7 @@ export class PortfolioDetails implements OnInit {
     this.holdingService.getHoldingsByPortfolioId(this.portfolio.id).subscribe({
       next: (holdings) => {
         this.holdings = holdings;
+        this.loadHoldingPrices();
         this.syncTradeStateWithHoldings();
         this.cdr.detectChanges();
       },
@@ -377,5 +381,31 @@ export class PortfolioDetails implements OnInit {
     this.selectedStock = null;
     this.tradeAction = Side.BUY;
     this.tradeErrorMessage = '';
+  }
+
+  private getCurrentPrice(symbol: string): number {
+    return this.currentPrices[symbol.toUpperCase()] ?? 0;
+  }
+
+  private loadHoldingPrices(): void {
+    const symbols = [...new Set(this.holdings.map((holding) => holding.stock.symbol).filter(Boolean))];
+
+    if (symbols.length === 0) {
+      this.currentPrices = {};
+      return;
+    }
+
+    this.stockService.getLiveStocksBySymbols(symbols).pipe(take(1)).subscribe({
+      next: (quotes) => {
+        this.currentPrices = quotes.reduce<Record<string, number>>((prices, quote) => {
+          prices[quote.symbol.toUpperCase()] = quote.currentPrice;
+          return prices;
+        }, {});
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        console.error('Failed to load holding prices', error);
+      },
+    });
   }
 }

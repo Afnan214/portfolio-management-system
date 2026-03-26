@@ -25,6 +25,7 @@
           <div class="block">
             <app-portfolio-holdings-list eyebrow="Positions" title="Holdings"
               description="Only active holdings in this portfolio are shown here." [holdings]="dashboardHoldings"
+              [currentPrices]="currentPrices"
               [emptyTitle]="
           activeHoldings.length === 0 ? 'No active holdings yet' : 'No holdings to show'
         " [emptyDescription]="
@@ -67,6 +68,7 @@
       @case ('holdings') {
       <app-portfolio-holdings-list eyebrow="Holdings" title="All Active Holdings"
         description="Every active position currently held in this portfolio." [holdings]="activeHoldings"
+        [currentPrices]="currentPrices"
         [emptyTitle]="activeHoldings.length === 0 ? 'No active holdings yet' : 'No holdings to show'"
         [emptyDescription]="
                 activeHoldings.length === 0

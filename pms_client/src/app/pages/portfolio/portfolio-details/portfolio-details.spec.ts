@@ -3,6 +3,7 @@ import { ActivatedRoute, convertToParamMap } from '@angular/router';
 import { of } from 'rxjs';
 import { HoldingService } from '../../../services/holdings-service';
 import { PortfolioService } from '../../../services/portfolio-service';
+import { StockService } from '../../../services/stock-service';
 import { TradeService } from '../../../services/trade-service';
 import { PortfolioDetails } from './portfolio-details';
 
@@ -45,6 +46,12 @@ describe('PortfolioDetails', () => {
           provide: HoldingService,
           useValue: {
             getHoldingsByPortfolioId: () => of([]),
+          },
+        },
+        {
+          provide: StockService,
+          useValue: {
+            getLiveStocksBySymbols: () => of([]),
           },
         },
       ],

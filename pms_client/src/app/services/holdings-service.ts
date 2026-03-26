@@ -10,8 +10,9 @@ export interface HoldingResponse {
     stock: {
         id: number;
         symbol: string;
-        companyName?: string;
-        currentPrice?: number;
+        companyName: string;
+        industry: string;
+        sector: string;
     };
 }
 
