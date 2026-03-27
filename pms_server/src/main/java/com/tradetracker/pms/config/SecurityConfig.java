@@ -17,6 +17,32 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+/**
+ * Spring Security configuration — defines how the application handles authentication and authorization.
+ *
+ * Key concepts:
+ *
+ * 1. Stateless session (no server-side session):
+ *    - SessionCreationPolicy.STATELESS means Spring won't create HTTP sessions.
+ *    - Authentication state is carried entirely by the JWT cookie on each request.
+ *    - This makes the API scalable (no session storage) and suitable for a SPA (Angular) frontend.
+ *
+ * 2. CSRF disabled:
+ *    - CSRF protection is disabled because the app uses JWT in HttpOnly cookies with SameSite policy,
+ *      and the API is stateless. CSRF is mainly a concern for session-based auth with form submissions.
+ *
+ * 3. Filter chain:
+ *    - JwtAuthenticationFilter runs BEFORE UsernamePasswordAuthenticationFilter.
+ *    - It extracts and validates the JWT cookie, then sets the authenticated user in SecurityContext.
+ *
+ * 4. Public vs protected endpoints:
+ *    - Public (no auth required): /api/auth/**, /api/stocks/**, /api/market-news/**, /ws/**
+ *    - Protected (JWT required): all other endpoints (portfolios, transactions, watchlists, etc.)
+ *
+ * 5. Authentication provider:
+ *    - DaoAuthenticationProvider uses CustomUserDetailsService to load users from the database
+ *      and BCryptPasswordEncoder to verify passwords during login.
+ */
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {

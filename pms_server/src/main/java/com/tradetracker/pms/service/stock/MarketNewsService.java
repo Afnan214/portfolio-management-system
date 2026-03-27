@@ -14,6 +14,19 @@ import org.springframework.web.client.RestClient;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * Scheduled service (cron job) that fetches market news articles from the Finnhub API.
+ *
+ * Cron / Scheduling:
+ * - Uses @Scheduled(cron = "0 0 6 * * *") to run once daily at 6:00 AM.
+ *   Cron format: second minute hour day month weekday → "0 0 6 * * *" means "at 06:00:00 every day".
+ * - Also uses @PostConstruct to fetch news immediately on application startup,
+ *   so the store is populated before any client requests arrive.
+ *
+ * Store:
+ * - Fetched articles are stored in MarketNewsStore (an in-memory AtomicReference-based cache).
+ * - The REST API reads from this store to serve news to the frontend without hitting Finnhub on every request.
+ */
 @Service
 public class MarketNewsService {
 
