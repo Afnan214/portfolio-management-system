@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
+import { ChangeDetectorRef, Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import {
   LucideAngularModule,
   User,
@@ -19,7 +20,9 @@ import {
   EyeOff,
   Mail,
   Smartphone,
+  LogOut
 } from 'lucide-angular';
+import { AuthService } from '../../auth/auth-service';
 
 interface ToggleSetting {
   label: string;
@@ -35,6 +38,10 @@ interface ToggleSetting {
   styleUrl: './settings.css',
 })
 export class Settings {
+  private authService = inject(AuthService);
+  private router = inject(Router);
+  private cdr = inject(ChangeDetectorRef);
+
   User = User;
   Bell = Bell;
   Shield = Shield;
@@ -51,6 +58,7 @@ export class Settings {
   EyeOff = EyeOff;
   Mail = Mail;
   Smartphone = Smartphone;
+  Logout = LogOut
 
   activeTab = 'general';
 
@@ -59,6 +67,8 @@ export class Settings {
     { id: 'notifications', label: 'Notifications', icon: this.Bell },
     { id: 'security', label: 'Security', icon: this.Shield },
     { id: 'appearance', label: 'Appearance', icon: this.Palette },
+    { id: 'logout', label: 'Logout', icon: this.Logout },
+
   ];
 
   // General settings
@@ -90,5 +100,19 @@ export class Settings {
 
   toggleNotification(index: number) {
     this.notifications[index].enabled = !this.notifications[index].enabled;
+  }
+
+  logout() {
+    this.authService.logout().subscribe({
+      next: () => {
+        this.cdr.detectChanges();
+        this.router.navigate(['/login']);
+      },
+      error: () => {
+        this.authService.clearUser();
+        this.cdr.detectChanges();
+        this.router.navigate(['/login']);
+      },
+    });
   }
 }

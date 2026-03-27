@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, inject } from '@angular/core';
 import { Navbar } from '../../components/navbar/navbar';
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -15,6 +15,7 @@ import { finalize } from 'rxjs/operators';
 export class Login {
   private authService = inject(AuthService);
   private router = inject(Router);
+  private cdr = inject(ChangeDetectorRef);
 
   isSubmitting = false;
   message = '';
@@ -30,19 +31,24 @@ export class Login {
       return;
     }
 
+    this.formData = {
+      email: this.formData.email.trim(),
+      password: this.formData.password,
+    };
+
     this.message = '';
     this.errorMessage = '';
-    this.isSubmitting = true;
+    this.setSubmittingState(true);
 
     this.authService
       .login(this.formData)
       .pipe(
         finalize(() => {
-          this.isSubmitting = false;
+          this.setSubmittingState(false);
         }),
       )
       .subscribe({
-        next: (response) => {
+        next: async (response) => {
           console.log('Login success:', response);
           this.message = 'Login successful.';
 
@@ -51,17 +57,25 @@ export class Login {
             password: '',
           };
 
-          this.router.navigate(['/console/dashboard']);
+          this.cdr.detectChanges();
+          await this.router.navigate(['/console/dashboard']);
         },
         error: (error) => {
           console.log('Login failed', error);
 
-          if (error.status === 401) {
+          if (error.status === 401 || error.status === 403) {
             this.errorMessage = 'Invalid email or password.';
           } else {
             this.errorMessage = 'Login failed. Please try again.';
           }
+
+          this.cdr.detectChanges();
         },
       });
+  }
+
+  private setSubmittingState(isSubmitting: boolean): void {
+    this.isSubmitting = isSubmitting;
+    this.cdr.detectChanges();
   }
 }

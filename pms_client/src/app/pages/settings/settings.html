@@ -336,6 +336,26 @@
         </div>
         }
 
+        <!-- Logout -->
+        @if (activeTab === 'logout') {
+        <div class="settings-panel">
+          <div class="rounded-xl bg-white p-6 shadow-sm">
+            <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h2 class="text-base font-semibold text-slate-800">Sign Out</h2>
+                <p class="mt-0.5 text-xs text-slate-400">Log out of your account and return to the login page</p>
+              </div>
+              <button
+                (click)="logout()"
+                class="btn rounded-lg border-none bg-red-500 px-6 text-white hover:bg-red-600"
+              >
+                Logout
+              </button>
+            </div>
+          </div>
+        </div>
+        }
+
       </div>
     </div>
   </div>
