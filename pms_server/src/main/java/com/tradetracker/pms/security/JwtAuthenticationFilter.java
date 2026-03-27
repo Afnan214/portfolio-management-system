@@ -19,6 +19,26 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
+/**
+ * JWT Authentication Filter — intercepts every HTTP request to check for a valid JWT token.
+ *
+ * This is a Spring Security filter that runs once per request (OncePerRequestFilter).
+ * It sits in the filter chain BEFORE Spring's default UsernamePasswordAuthenticationFilter.
+ *
+ * Authentication flow:
+ * 1. Extract the JWT from the "access_token" HttpOnly cookie (not from the Authorization header).
+ * 2. If no cookie is found, skip authentication and let the request continue (it may hit a public endpoint).
+ * 3. If a cookie is found, decode the JWT using JwtService to extract the user's email.
+ * 4. Load the user from the database via CustomUserDetailsService.
+ * 5. Validate the token (signature + expiration + username match).
+ * 6. If valid, set the user as authenticated in Spring's SecurityContextHolder — all downstream
+ *    code (controllers, @AuthenticationPrincipal, etc.) can now access the authenticated user.
+ *
+ * Error handling:
+ * - Expired, malformed, or invalid tokens → clear the SecurityContext and delete the cookie,
+ *   effectively logging the user out.
+ * - User not found in DB (e.g., account deleted) → same behavior, clear context and cookie.
+ */
 @Component
 public class JwtAuthenticationFilter  extends OncePerRequestFilter {
 
