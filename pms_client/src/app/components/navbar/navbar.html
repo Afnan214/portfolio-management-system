@@ -20,7 +20,10 @@
 
     <!-- Right side actions (desktop) -->
     @if (isLoggedIn$ | async) {
-    <a class="login-link" (click)="logout()">Logout</a>
+    <div>
+      <a class="mr-5 border p-2 rounded-2xl hover:cursor-pointer" [routerLink]="['/console/dashboard']">console</a>
+      <a class="login-link" (click)="logout()">Logout</a>
+    </div>
     }
     @else {
 
