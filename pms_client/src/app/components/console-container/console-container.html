@@ -1,12 +1,25 @@
 <!-- console-layout.component.html -->
 <div class="flex h-screen overflow-hidden bg-gray-100">
 
-    <!-- Sidebar will shrink from w-64 to w-20 -->
+    <!-- Sidebar: fixed overlay on mobile, in-flow on desktop (handled via CSS) -->
     <app-sidebar></app-sidebar>
 
-    <!-- This main area will automatically expand to fill the 44px of new space -->
-    <main class="flex-1 overflow-y-auto p-6 transition-all duration-300">
-        <router-outlet></router-outlet>
-    </main>
+    <div class="flex flex-1 flex-col overflow-hidden">
+        <!-- Mobile top bar -->
+        <div class="flex h-14 items-center gap-3 border-b border-slate-100 bg-white px-4 lg:hidden">
+            <button
+                (click)="sidebarService.openMobile()"
+                class="flex h-9 w-9 items-center justify-center rounded-lg text-slate-600 hover:bg-slate-100">
+                <lucide-icon [img]="Menu" [size]="20"></lucide-icon>
+            </button>
+            <span class="text-lg font-semibold text-green-500">M</span>
+            <span class="text-base font-semibold text-slate-800">Moonland</span>
+        </div>
+
+        <!-- Main content area -->
+        <main class="flex-1 overflow-y-auto p-4 transition-all duration-300 sm:p-6">
+            <router-outlet></router-outlet>
+        </main>
+    </div>
 
 </div>

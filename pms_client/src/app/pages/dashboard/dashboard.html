@@ -1,12 +1,12 @@
 <section class="min-h-screen bg-[#f6f8f6] text-slate-800 transition-all duration-300">
   <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
     <!-- Header -->
-    <div class="mb-6 flex items-center justify-between">
+    <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <h1 class="text-2xl font-bold">Dashboard</h1>
-      <div class="flex items-center gap-4">
-        <div class="flex items-center gap-2 rounded-xl bg-white px-4 py-2 shadow-sm">
+      <div class="flex items-center gap-3">
+        <div class="flex items-center gap-2 rounded-xl bg-white px-3 py-2 shadow-sm sm:px-4">
           <lucide-icon [img]="Wallet" [size]="16" class="text-slate-400"></lucide-icon>
-          <span class="text-sm text-slate-500">Fund Balance</span>
+          <span class="hidden text-sm text-slate-500 sm:inline">Fund Balance</span>
           <span class="text-sm font-bold">${{ fundBalance | number: '1.2-2' }}</span>
         </div>
         <button
@@ -14,7 +14,8 @@
           class="btn btn-sm gap-2 rounded-xl border-none bg-green-500 text-white hover:bg-green-600"
         >
           <lucide-icon [img]="Plus" [size]="16"></lucide-icon>
-          Add Funds
+          <span class="hidden sm:inline">Add Funds</span>
+          <span class="sm:hidden">Add</span>
         </button>
       </div>
     </div>
@@ -148,11 +149,11 @@
 <!-- Add Funds Modal -->
 @if (showAddFundsModal) {
   <div
-    class="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4"
     (click)="closeAddFundsModal()"
   >
     <div
-      class="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl"
+      class="w-full max-w-md rounded-2xl bg-white p-5 shadow-xl sm:p-6"
       (click)="$event.stopPropagation()"
     >
       <div class="flex items-center justify-between">

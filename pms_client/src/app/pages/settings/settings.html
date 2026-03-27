@@ -12,7 +12,7 @@
 
       <!-- Tab Navigation -->
       <div class="w-full shrink-0 lg:w-56">
-        <nav class="flex gap-1 overflow-x-auto lg:flex-col">
+        <nav class="flex gap-1 overflow-x-auto pb-2 lg:flex-col lg:pb-0">
           @for (tab of tabs; track tab.id) {
           <button
             (click)="activeTab = tab.id"
@@ -261,7 +261,7 @@
             <h2 class="text-base font-semibold text-slate-800">Theme</h2>
             <p class="mt-0.5 text-xs text-slate-400">Choose your preferred color scheme</p>
 
-            <div class="mt-5 grid grid-cols-3 gap-3">
+            <div class="mt-5 grid grid-cols-3 gap-2 sm:gap-3">
               <button (click)="theme = 'light'"
                 class="flex flex-col items-center gap-2 rounded-xl border-2 p-4 transition-all"
                 [class.border-green-500]="theme === 'light'" [class.border-slate-100]="theme !== 'light'">

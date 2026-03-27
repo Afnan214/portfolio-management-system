@@ -11,6 +11,7 @@ import {
   Settings,
   ChevronLeft,
   ChevronRight,
+  X,
 } from 'lucide-angular';
 import { SidebarService } from './sidebar-service';
 
@@ -30,6 +31,7 @@ export class Sidebar {
   Settings = Settings;
   ChevronLeft = ChevronLeft;
   ChevronRight = ChevronRight;
+  X = X;
   constructor(public sidebarService: SidebarService) { }
 
   @Output() collapsedChange = new EventEmitter<boolean>();
@@ -48,5 +50,9 @@ export class Sidebar {
   toggleCollapse() {
     this.collapsed = !this.collapsed;
     this.collapsedChange.emit(this.collapsed);
+  }
+
+  onNavClick() {
+    this.sidebarService.closeMobile();
   }
 }

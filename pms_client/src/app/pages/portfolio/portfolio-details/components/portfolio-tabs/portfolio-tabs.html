@@ -1,8 +1,8 @@
-<div class="rounded-2xl border border-base-300 bg-base-100 px-3 py-2 shadow-sm">
-  <div class="flex flex-wrap items-center gap-2">
+<div class="rounded-2xl border border-base-300 bg-base-100 px-2 py-2 shadow-sm sm:px-3">
+  <div class="flex items-center gap-1 overflow-x-auto sm:gap-2">
     @for (tab of tabs; track tab.id) {
     <button type="button" (click)="activeTabChange.emit(tab.id)"
-      class="rounded-xl px-5 py-3 text-base font-medium transition-colors"
+      class="whitespace-nowrap rounded-xl px-3 py-2 text-sm font-medium transition-colors sm:px-5 sm:py-3 sm:text-base"
       [class.bg-\[\#ecfdf3\]]="activeTab === tab.id" [class.text-\[\#15803d\]]="activeTab === tab.id"
       [class.border]="activeTab === tab.id" [class.border-\[\#bbf7d0\]]="activeTab === tab.id"
       [class.text-slate-700]="activeTab !== tab.id" [class.hover:bg-slate-50]="activeTab !== tab.id">

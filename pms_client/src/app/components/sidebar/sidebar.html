@@ -1,12 +1,29 @@
+<!-- Mobile backdrop -->
+@if (sidebarService.isMobileOpen()) {
+  <div
+    class="fixed inset-0 z-40 bg-black/40 lg:hidden"
+    (click)="sidebarService.closeMobile()"
+  ></div>
+}
+
 <aside
-  class="z-40 flex h-screen flex-col bg-white shadow-sm transition-all duration-300 border-r border-slate-100 flex-shrink-0"
-  [class.w-64]="!collapsed" [class.w-20]="collapsed">
+  class="fixed z-50 flex h-screen flex-col bg-white shadow-sm transition-all duration-300 border-r border-slate-100 flex-shrink-0 lg:relative lg:translate-x-0"
+  [class.w-64]="!collapsed"
+  [class.w-20]="collapsed"
+  [class.-translate-x-full]="!sidebarService.isMobileOpen()"
+  [class.translate-x-0]="sidebarService.isMobileOpen()">
   <!-- Logo -->
   <div class="flex h-16 items-center gap-3 border-b border-slate-100 px-5">
     <span class="text-xl font-bold text-green-500">M</span>
     @if (!collapsed) {
     <span class="text-lg font-semibold text-slate-800">Moonland</span>
     }
+    <!-- Mobile close button -->
+    <button
+      class="ml-auto flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-600 lg:hidden"
+      (click)="sidebarService.closeMobile()">
+      <lucide-icon [img]="X" [size]="18"></lucide-icon>
+    </button>
   </div>
 
   <!-- Nav Items -->
@@ -15,7 +32,8 @@
     <a [routerLink]="item.route" routerLinkActive="bg-green-50 text-green-600"
       [routerLinkActiveOptions]="{ exact: item.route === 'console/dashboard' }"
       class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-500 transition-colors hover:bg-slate-50 hover:text-slate-700"
-      [class.justify-center]="collapsed" [title]="collapsed ? item.label : ''">
+      [class.justify-center]="collapsed" [title]="collapsed ? item.label : ''"
+      (click)="onNavClick()">
       <lucide-icon [img]="item.icon" [size]="20" class="shrink-0"></lucide-icon>
       @if (!collapsed) {
       <span>{{ item.label }}</span>
@@ -24,8 +42,8 @@
     }
   </nav>
 
-  <!-- Collapse Toggle -->
-  <div class="border-t border-slate-100 p-3">
+  <!-- Collapse Toggle (desktop only) -->
+  <div class="hidden border-t border-slate-100 p-3 lg:block">
     <button (click)="toggleCollapse()"
       class="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-400 transition-colors hover:bg-slate-50 hover:text-slate-600"
       [class.justify-center]="collapsed">

@@ -8,7 +8,7 @@
 
     <!-- Avatar Card -->
     <div class="card w-full bg-white shadow-sm">
-      <div class="card-body flex flex-row items-center gap-6 p-6">
+      <div class="card-body flex flex-col items-center gap-4 p-5 sm:flex-row sm:gap-6 sm:p-6">
         <div
           class="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-green-100 text-xl font-bold text-green-600"
         >
@@ -27,7 +27,7 @@
 
     <!-- Funds Card -->
     <div class="card mt-4 w-full bg-white shadow-sm">
-      <div class="card-body flex flex-row items-center justify-between p-6">
+      <div class="card-body flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
         <div>
           <div class="flex items-center gap-2 text-slate-400">
             <lucide-icon [img]="Wallet" [size]="16"></lucide-icon>
@@ -264,11 +264,11 @@
 <!-- Add Funds Modal -->
 @if (showAddFundsModal) {
   <div
-    class="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4"
     (click)="closeAddFundsModal()"
   >
     <div
-      class="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl"
+      class="w-full max-w-md rounded-2xl bg-white p-5 shadow-xl sm:p-6"
       (click)="$event.stopPropagation()"
     >
       <div class="flex items-center justify-between">

@@ -1,8 +1,8 @@
 <section class="min-h-screen bg-[#f6f8f6] text-slate-800">
   <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-    <div class="flex items-center gap-3">
+    <div class="flex flex-wrap items-center gap-3">
       <lucide-icon [img]="Coins" [size]="34"></lucide-icon>
-      <h1 class="text-2xl font-bold">Market Overview</h1>
+      <h1 class="text-xl font-bold sm:text-2xl">Market Overview</h1>
       <span
         class="inline-flex items-center gap-1.5 rounded-full bg-green-50 px-3 py-1 text-xs font-semibold text-green-700"
       >
@@ -165,7 +165,7 @@
         </div>
 
         <!-- Filter Dropdown + Quick Buttons -->
-        <div class="flex items-center gap-2">
+        <div class="flex flex-wrap items-center gap-2">
           <!-- Custom Dropdown -->
           <div class="filter-dropdown relative">
             <button
@@ -272,33 +272,33 @@
 
       <!-- Table -->
       @if (allStocks$ | async; as allStocks) {
-        <div class="mt-4 overflow-hidden rounded-2xl bg-white shadow-sm">
+        <div class="mt-4 overflow-x-auto rounded-2xl bg-white shadow-sm">
           <table class="w-full text-left">
             <thead>
               <tr class="border-b border-slate-100 text-xs font-semibold uppercase tracking-wider text-slate-400">
-                <th class="px-6 py-4">Asset</th>
-                <th class="px-6 py-4 text-right">Price</th>
+                <th class="px-3 py-3 sm:px-6 sm:py-4">Asset</th>
+                <th class="px-3 py-3 text-right sm:px-6 sm:py-4">Price</th>
                 <th class="hidden px-6 py-4 text-center sm:table-cell">Trend</th>
-                <th class="px-6 py-4 text-right">Change %</th>
+                <th class="px-3 py-3 text-right sm:px-6 sm:py-4">Change %</th>
               </tr>
             </thead>
             <tbody>
               @for (stock of filterStocks(allStocks); track stock.symbol) {
                 <tr class="border-b border-slate-50 transition hover:bg-slate-50/60">
                   <!-- Asset -->
-                  <td class="px-6 py-4">
-                    <div class="flex items-center gap-3">
+                  <td class="px-3 py-3 sm:px-6 sm:py-4">
+                    <div class="flex items-center gap-2 sm:gap-3">
                       <img
                         [src]="getLogoUrl(stock.symbol)"
                         [alt]="stock.symbol"
-                        class="h-9 w-9 rounded-full object-cover"
+                        class="hidden h-9 w-9 rounded-full object-cover sm:block"
                         onerror="this.style.display='none'"
                       />
                       <span class="text-sm font-semibold text-slate-800">{{ stock.symbol }}</span>
                     </div>
                   </td>
                   <!-- Price -->
-                  <td class="px-6 py-4 text-right text-sm font-medium text-slate-800">
+                  <td class="px-3 py-3 text-right text-sm font-medium text-slate-800 sm:px-6 sm:py-4">
                     {{ stock.currentPrice | number: '1.2-2' }} $
                   </td>
                   <!-- Sparkline -->
@@ -317,7 +317,7 @@
                     </div>
                   </td>
                   <!-- Change % -->
-                  <td class="px-6 py-4 text-right">
+                  <td class="px-3 py-3 text-right sm:px-6 sm:py-4">
                     <span
                       class="inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold"
                       [ngClass]="
