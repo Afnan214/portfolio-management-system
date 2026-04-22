@@ -27,6 +27,10 @@ public class AuthController {
         this.authService = authService;
         this.userRepository = userRepository;
     }
+    @GetMapping("/heath")
+    public String healthCheck(@RequestParam String param) {
+        return new String("Is healthy");
+    }
 
     @PostMapping("/register")
     public ResponseEntity<AuthResponse> register(
