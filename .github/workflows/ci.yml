@@ -1,0 +1,79 @@
+name: PMS CI
+
+on:
+    push:
+        branches: [master, develop]
+    pull_request:
+        branches: [master, develop]
+
+jobs:
+    build-and-test:
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+              #---------------PMS-CLient-----------------
+            - name: Setup Node
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 20
+                  cache: npm
+                  cache-dependency-path: pms_client/package-lock.json
+
+            - name: Install client dependencies
+              working-directory: pms_client
+              run: npm ci
+
+            - name: Build angular app
+              working-directory: pms_client
+              run: npm run build
+
+              #---------backend--------------
+            - name: SetupJava
+              uses: actions/setup-java@v4
+              with:
+                  distribution: temurin
+                  java-version: 21
+                  cache: maven
+
+            - name: Make maven wrapper executable
+              working-directory: pms_server
+              run: chmod +x mvn
+
+            - name: Build and test Spring Boot app
+              working-directory: pms_server
+              run: ./mvnw clean verify
+
+            # -----SMOKE TEST-----------
+            - name: Start Spring Boot app
+              working-directory: pms_server
+              run: nohup ./mvnw spring-boot:run > app.log 2>&1 &
+                  echo $! > app.pid
+
+            - name: Wait for backend to start
+              run: |
+                  for i in {1..30}; do
+                    if curl -f http://localhost:8080/api/health; then
+                      echo "App is up"
+                      exit 0
+                    fi
+                    echo "Waiting for app..."
+                    sleep 5
+                  done
+                  echo "App failed to start"
+                  exit 1
+
+            - name: Show backend logs if failure
+              if: failure()
+              working-directory: backend
+              run: cat app.log
+
+            - name: Stop Spring Boot app
+              if: always()
+              working-directory: backend
+              run: |
+                  if [ -f app.pid ]; then
+                    kill $(cat app.pid) || true
+                  fi
