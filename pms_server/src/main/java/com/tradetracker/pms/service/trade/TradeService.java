@@ -10,6 +10,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -23,11 +24,12 @@ public class TradeService{
     TradeRepository tradeRepository;
     StockRepository stockRepository;
     HoldingRepository holdingRepository;
-    public TradeService(PortfolioRepository portfolioRepository, UserRepository userRepository, TradeRepository tradeRepository, StockRepository stockRepository) {
+    public TradeService(PortfolioRepository portfolioRepository, UserRepository userRepository, TradeRepository tradeRepository, StockRepository stockRepository, HoldingRepository holdingRepository) {
         this.portfolioRepository = portfolioRepository;
         this.userRepository = userRepository;
         this.stockRepository = stockRepository;
         this.tradeRepository = tradeRepository;
+        this.holdingRepository = holdingRepository;
     }
     public List<Trade> getTradesByPortfolio(Long portfolioId){
         return tradeRepository.findTradeByPortfolioId(portfolioId);
@@ -37,7 +39,6 @@ public class TradeService{
         return tradeRepository.findById(tradeId).orElseThrow(()-> new RuntimeException("Trade could not be found for id: " + tradeId));
     }
 
-
     @Transactional
     public Trade createTrade(Long portfolioId, CreateTradeRequest createTradeRequest) {
         Stock stock = stockRepository.findBySymbol(createTradeRequest.getSymbol())
@@ -46,46 +47,82 @@ public class TradeService{
         Portfolio portfolio = portfolioRepository.findById(portfolioId)
                 .orElseThrow(() -> new RuntimeException("Portfolio not found"));
 
-        BigDecimal totalAmount = createTradeRequest.getQuantity()
-                .multiply(createTradeRequest.getPricePerShare());
+        BigDecimal tradeQuantity = createTradeRequest.getQuantity();
+        BigDecimal pricePerShare = createTradeRequest.getPricePerShare();
+        BigDecimal tradeCost = pricePerShare.multiply(tradeQuantity);
 
-
-        //need to update Holding when a trade is made. If holding for this stock doesn't exist, we must create a new holding
-        Holding holding =  holdingRepository.findByStockIdAndPortfolioId(stock.getId(), portfolio.getId());
-        if(holding == null){
-            holding = new Holding();
-            holding.setStock(stock);
-            holding.setPortfolio(portfolio);
-            holding.setQuantity(new BigDecimal(0));
-            holding.setAverageCostBasis(new BigDecimal(0));
-            holding.setTotalCostBasis(new BigDecimal(0));
+        if (tradeQuantity.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new RuntimeException("Quantity must be greater than zero");
         }
 
-        // 1. Update Portfolio Cash Balance
+        if (pricePerShare.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new RuntimeException("Price per share must be greater than zero");
+        }
+
+        Holding holding = holdingRepository.findByStockIdAndPortfolioId(stock.getId(), portfolio.getId());
+
         if (createTradeRequest.getSide() == Side.BUY) {
-            //  cashBalance >= totalAmount
-            if (portfolio.getCashBalance().compareTo(totalAmount) < 0) {
-                throw new RuntimeException("Insufficient funds: Total amount " + totalAmount +
-                        " exceeds balance " + portfolio.getCashBalance());
+            if (portfolio.getCashBalance().compareTo(tradeCost) < 0) {
+                throw new RuntimeException(
+                        "Insufficient funds: Total amount " + tradeCost +
+                                " exceeds balance " + portfolio.getCashBalance()
+                );
             }
-            portfolio.setCashBalance(portfolio.getCashBalance().subtract(totalAmount));
-        } else if (createTradeRequest.getSide() == Side.SELL) {
-            // Add proceeds to balance
-            portfolio.setCashBalance(portfolio.getCashBalance().add(totalAmount));
-        }
 
-        // Need to implement holdings updates when trade is made
+            portfolio.setCashBalance(portfolio.getCashBalance().subtract(tradeCost));
+
+            if (holding == null) {
+                holding = new Holding();
+                holding.setStock(stock);
+                holding.setPortfolio(portfolio);
+                holding.setQuantity(tradeQuantity);
+                holding.setTotalCostBasis(tradeCost);
+            } else {
+                holding.setQuantity(holding.getQuantity().add(tradeQuantity));
+                holding.setTotalCostBasis(holding.getTotalCostBasis().add(tradeCost));
+            }
+
+            holding.setAverageCostBasis(
+                    holding.getTotalCostBasis().divide(holding.getQuantity(), 2, RoundingMode.HALF_EVEN)
+            );
+
+            holdingRepository.save(holding);
+
+        } else if (createTradeRequest.getSide() == Side.SELL) {
+            if (holding == null) {
+                throw new RuntimeException("Cannot sell: holding does not exist");
+            }
+
+            if (holding.getQuantity().compareTo(tradeQuantity) < 0) {
+                throw new RuntimeException("Cannot sell more shares than currently owned");
+            }
+
+            BigDecimal costBasisRemoved = holding.getAverageCostBasis().multiply(tradeQuantity);
+
+            portfolio.setCashBalance(portfolio.getCashBalance().add(tradeCost));
+            holding.setQuantity(holding.getQuantity().subtract(tradeQuantity));
+            holding.setTotalCostBasis(holding.getTotalCostBasis().subtract(costBasisRemoved));
+
+            if (holding.getQuantity().compareTo(BigDecimal.ZERO) == 0) {
+                holding.setTotalCostBasis(BigDecimal.ZERO);
+                holding.setAverageCostBasis(BigDecimal.ZERO);
+            } else {
+                holding.setAverageCostBasis(
+                        holding.getTotalCostBasis().divide(holding.getQuantity(), 2, RoundingMode.HALF_EVEN)
+                );
+            }
+
+            holdingRepository.save(holding);
+        }
 
         Trade trade = new Trade();
         trade.setPortfolio(portfolio);
         trade.setStock(stock);
         trade.setSide(createTradeRequest.getSide());
-        trade.setQuantity(createTradeRequest.getQuantity());
-        trade.setPricePerShare(createTradeRequest.getPricePerShare());
-        trade.setTotalAmount(totalAmount);
+        trade.setQuantity(tradeQuantity);
+        trade.setPricePerShare(pricePerShare);
+        trade.setTotalAmount(tradeCost);
 
         return tradeRepository.save(trade);
     }
-    // need to implement update trade:
-
 }
