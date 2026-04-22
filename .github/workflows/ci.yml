@@ -67,12 +67,12 @@ jobs:
 
             - name: Show backend logs if failure
               if: failure()
-              working-directory: backend
+              working-directory: pms_server
               run: cat app.log
 
             - name: Stop Spring Boot app
               if: always()
-              working-directory: backend
+              working-directory: pms_server
               run: |
                   if [ -f app.pid ]; then
                     kill $(cat app.pid) || true
