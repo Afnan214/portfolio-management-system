@@ -40,7 +40,7 @@ jobs:
 
             - name: Make maven wrapper executable
               working-directory: pms_server
-              run: chmod +x mvn
+              run: chmod +x mvnw
 
             - name: Build and test Spring Boot app
               working-directory: pms_server
