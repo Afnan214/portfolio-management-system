@@ -7,6 +7,7 @@ import com.tradetracker.pms.entity.User;
 import com.tradetracker.pms.repository.UserRepository;
 import com.tradetracker.pms.service.AuthService;
 import jakarta.validation.Valid;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
@@ -28,16 +29,17 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<AuthResponse> register(@Valid @RequestBody CreateUserRequest request) {
+    public ResponseEntity<AuthResponse> register(
+            @Valid @RequestBody CreateUserRequest request,
+            HttpServletRequest httpRequest
+    ) {
         AuthService.AuthResult result = authService.register(request);
 
-        ResponseCookie cookie = ResponseCookie.from("access_token", result.token())
-                .httpOnly(true)
-                .secure(true)
-                .path("/")
-                .sameSite("None")
-                .maxAge(Duration.ofHours(24))
-                .build();
+        ResponseCookie cookie = buildAuthCookie(
+                result.token(),
+                Duration.ofHours(24),
+                httpRequest.isSecure()
+        );
 
         AuthResponse response = new AuthResponse(
                 result.user().getId(),
@@ -51,16 +53,17 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
+    public ResponseEntity<AuthResponse> login(
+            @Valid @RequestBody LoginRequest request,
+            HttpServletRequest httpRequest
+    ) {
         AuthService.AuthResult result = authService.login(request);
 
-        ResponseCookie cookie = ResponseCookie.from("access_token", result.token())
-                .httpOnly(true)
-                .secure(true)
-                .path("/")
-                .sameSite("None")
-                .maxAge(Duration.ofHours(24))
-                .build();
+        ResponseCookie cookie = buildAuthCookie(
+                result.token(),
+                Duration.ofHours(24),
+                httpRequest.isSecure()
+        );
 
         AuthResponse response = new AuthResponse(
                 result.user().getId(),
@@ -74,10 +77,16 @@ public class AuthController {
     }
     @GetMapping("/me")
     public ResponseEntity<AuthResponse> me(Authentication authentication) {
+        if (authentication == null
+                || !authentication.isAuthenticated()
+                || "anonymousUser".equals(authentication.getName())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
         String email = authentication.getName();
 
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new RuntimeException("Authenticated user not found"));
 
         return ResponseEntity.ok(new AuthResponse(
                 user.getId(),
@@ -86,17 +95,21 @@ public class AuthController {
         ));
     }
     @PostMapping("/logout")
-    public ResponseEntity<Void> logout() {
-        ResponseCookie cookie = ResponseCookie.from("access_token", "")
-                .httpOnly(true)
-                .secure(true)
-                .path("/")
-                .sameSite("None")
-                .maxAge(0)
-                .build();
+    public ResponseEntity<Void> logout(HttpServletRequest httpRequest) {
+        ResponseCookie cookie = buildAuthCookie("", Duration.ZERO, httpRequest.isSecure());
 
         return ResponseEntity.noContent()
                 .header(HttpHeaders.SET_COOKIE, cookie.toString())
+                .build();
+    }
+
+    private ResponseCookie buildAuthCookie(String token, Duration maxAge, boolean secure) {
+        return ResponseCookie.from("access_token", token)
+                .httpOnly(true)
+                .secure(secure)
+                .path("/")
+                .sameSite(secure ? "None" : "Lax")
+                .maxAge(maxAge)
                 .build();
     }
 }

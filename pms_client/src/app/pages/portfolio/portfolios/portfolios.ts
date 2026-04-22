@@ -4,11 +4,12 @@ import { AuthService } from '../../../auth/auth-service';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { PortfolioService } from '../../../services/portfolio-service';
+import { ArrowDownRight, ArrowUpRight, LucideAngularModule } from 'lucide-angular';
 
 @Component({
   selector: 'app-portfolios',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, LucideAngularModule],
   templateUrl: './portfolios.html',
   styleUrl: './portfolios.css',
 })
@@ -20,6 +21,8 @@ export class Portfolios implements OnInit {
   portfolios: PortfolioResponse[] = [];
   isLoading = true;
   errorMessage = '';
+  ArrowUpRight = ArrowUpRight;
+  ArrowDownRight = ArrowDownRight;
 
   ngOnInit(): void {
     const currentUser = this.authService.getCurrentUserSnapshot();
@@ -35,7 +38,6 @@ export class Portfolios implements OnInit {
       next: (response) => {
         this.portfolios = response;
         this.isLoading = false;
-        console.log(this.portfolios);
         this.cdr.detectChanges();
       },
       error: () => {

@@ -1,14 +1,16 @@
 package com.tradetracker.pms.controller;
 
+import com.tradetracker.pms.dto.request.portfolio.AddFundsRequest;
 import com.tradetracker.pms.dto.request.portfolio.CreatePortfolioRequest;
 import com.tradetracker.pms.dto.request.portfolio.UpdatePortfolioRequest;
 import com.tradetracker.pms.dto.request.portfolio.trade.CreateTradeRequest;
 import com.tradetracker.pms.dto.response.portfolio.PortfolioResponse;
 import com.tradetracker.pms.entity.Holding;
-import com.tradetracker.pms.entity.Portfolio;
+import com.tradetracker.pms.entity.PortfolioValuation;
 import com.tradetracker.pms.entity.Trade;
 import com.tradetracker.pms.service.holding.HoldingService;
 import com.tradetracker.pms.service.portfolio.PortfolioService;
+import com.tradetracker.pms.service.portfoliovaluation.PortfolioValuationService;
 import com.tradetracker.pms.service.trade.TradeService;
 import jakarta.validation.Valid;
 import org.apache.coyote.Response;
@@ -31,9 +33,9 @@ public class PortfolioController {
         this.tradeService = tradeService;
     }
     @GetMapping
-    public ResponseEntity<List<Portfolio>> getPortfolios(Authentication authentication){
+    public ResponseEntity<List<PortfolioResponse>> getPortfolios(Authentication authentication){
         String email = authentication.getName();
-        List<Portfolio> portfolios=  portfolioService.getPortfolioByUser(email);
+        List<PortfolioResponse> portfolios=  portfolioService.getPortfolioByUser(email);
         return ResponseEntity.ok(portfolios);
     }
 
@@ -43,7 +45,12 @@ public class PortfolioController {
 
         return ResponseEntity.ok(portfolioResponse);
     }
-
+    @GetMapping("/default")
+    public ResponseEntity<PortfolioResponse> getDefaultPortfolio(Authentication authentication){
+        String email = authentication.getName();
+        PortfolioResponse portfolio = portfolioService.getDefaultPortfolioByUser(email);
+        return ResponseEntity.ok(portfolio);
+    }
     @PostMapping
     public ResponseEntity<PortfolioResponse> createPortfolio(
             @Valid @RequestBody CreatePortfolioRequest createPortfolioRequest,
@@ -61,6 +68,15 @@ public class PortfolioController {
         String email = authentication.getName();
         PortfolioResponse newPortfolio = portfolioService.updatePortfolioById(id, updatePortfolioRequest, email);
         return ResponseEntity.status(HttpStatus.CREATED).body(newPortfolio);
+    }
+
+    @PostMapping("/{id}/add-funds")
+    public ResponseEntity<PortfolioResponse> addFunds(
+            @PathVariable Long id,
+            @Valid @RequestBody AddFundsRequest addFundsRequest
+    ) {
+        PortfolioResponse updated = portfolioService.addFunds(id, addFundsRequest.getAmount());
+        return ResponseEntity.ok(updated);
     }
 
     @DeleteMapping("/{id}")
@@ -93,5 +109,11 @@ public class PortfolioController {
         List<Holding> holdings = holdingService.getHoldigsByPortfolioId(id);
         return ResponseEntity.ok(holdings);
     }
-
+    //======================================================================================
+//    //Portfolio Valuations (aka -> profit/loss data)
+    @GetMapping("/{id}/valuations")
+    public ResponseEntity<List<PortfolioValuation>> getPortfolioValuations(@PathVariable Long id){
+        List<PortfolioValuation> valuations = portfolioService.getPortfolioValuationByIId(id);
+        return ResponseEntity.ok(valuations);
+    }
 }

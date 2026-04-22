@@ -70,6 +70,12 @@
 
           <form class="flex flex-1 flex-col" (ngSubmit)="onSubmit()">
             <div class="space-y-5">
+              @if (errorMessage) {
+              <div class="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                {{ errorMessage }}
+              </div>
+              }
+
               <div class="grid gap-5 sm:grid-cols-2">
                 <div>
                   <label class="mb-2 block text-sm font-medium text-slate-700">First name</label>
@@ -86,8 +92,14 @@
 
               <div>
                 <label class="mb-2 block text-sm font-medium text-slate-700">Email</label>
-                <input type="email" name="email" [(ngModel)]="formData.email" placeholder="jasondoe21@gmail.com"
-                  class="h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-green-500 focus:ring-2 focus:ring-green-100" />
+                <input type="email" name="email" [(ngModel)]="formData.email" #emailInput="ngModel"
+                  placeholder="jasondoe21@gmail.com" required email
+                  class="h-12 w-full rounded-2xl border bg-white px-4 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-green-500 focus:ring-2 focus:ring-green-100"
+                  [class.border-red-300]="emailInput.invalid && (emailInput.touched || submitAttempted)"
+                  [class.border-slate-200]="!(emailInput.invalid && (emailInput.touched || submitAttempted))" />
+                @if (emailInput.invalid && (emailInput.touched || submitAttempted)) {
+                <p class="mt-2 text-sm text-red-600">Please enter a valid email address.</p>
+                }
               </div>
 
               <div>

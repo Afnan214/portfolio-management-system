@@ -14,6 +14,24 @@ import org.springframework.web.client.RestClient;
 import java.time.Instant;
 import java.util.List;
 
+/**
+ * Scheduled service (cron job) that polls the Finnhub API for stock quotes at a fixed interval.
+ *
+ * Cron / Scheduling:
+ * - Uses Spring's @Scheduled(fixedRate = 90000) to run pollStockQuotes() every 90 seconds.
+ * - This acts as a cron job: the method is automatically invoked by Spring's task scheduler on a fixed interval,
+ *   without any HTTP request triggering it.
+ * - A 1-second delay between each API call avoids hitting Finnhub's rate limit.
+ *
+ * WebSocket integration:
+ * - After fetching all quotes, the service broadcasts the full stock data to all connected WebSocket clients
+ *   via SimpMessagingTemplate.convertAndSend("/topic/stock-quotes", ...).
+ * - This means the frontend receives live stock updates without needing to poll the backend.
+ *
+ * Store:
+ * - Fetched quotes are stored in StockStore (an in-memory ConcurrentHashMap-based cache).
+ * - The store is also used by the REST API (StockServiceImpl) to serve stock data on demand.
+ */
 @Service
 public class FinnhubPollingService {
 
@@ -62,6 +80,7 @@ public class FinnhubPollingService {
 
     log.info("Polling complete. {} quotes in store.", stockStore.size());
 
+    // Sending stock quotes to clients 
     messagingTemplate.convertAndSend("/topic/stock-quotes", stockStore.getAll());
   }
 

@@ -5,40 +5,56 @@ import com.tradetracker.pms.dto.request.portfolio.UpdatePortfolioRequest;
 import com.tradetracker.pms.dto.request.portfolio.trade.CreateTradeRequest;
 import com.tradetracker.pms.dto.response.portfolio.PortfolioResponse;
 import com.tradetracker.pms.entity.Portfolio;
+import com.tradetracker.pms.entity.PortfolioValuation;
 import com.tradetracker.pms.entity.Trade;
+import com.tradetracker.pms.entity.TransactionType;
 import com.tradetracker.pms.entity.User;
 import com.tradetracker.pms.repository.PortfolioRepository;
+import com.tradetracker.pms.repository.PortfolioValuationRepository;
 import com.tradetracker.pms.repository.UserRepository;
+import com.tradetracker.pms.service.transaction.TransactionService;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 @Service
 public class PortfolioService {
     PortfolioRepository portfolioRepository;
     UserRepository userRepository;
-    public PortfolioService(PortfolioRepository portfolioRepository, UserRepository userRepository) {
+    PortfolioValuationRepository portfolioValuationRepository;
+    TransactionService transactionService;
+    public PortfolioService(PortfolioRepository portfolioRepository, UserRepository userRepository, PortfolioValuationRepository portfolioValuationRepository, TransactionService transactionService) {
         this.portfolioRepository = portfolioRepository;
         this.userRepository = userRepository;
+        this.portfolioValuationRepository = portfolioValuationRepository;
+        this.transactionService = transactionService;
     }
-    public List<Portfolio> getPortfolioByUser(String email){
+    public List<PortfolioResponse> getPortfolioByUser(String email){
         User user = userRepository.findByEmail(email).orElseThrow(()-> new RuntimeException("User does not exist"));
-        return portfolioRepository.findByUserId(user.getId());
+        return portfolioRepository.findByUserId(user.getId())
+                .stream()
+                .map(this::toPortfolioResponse)
+                .collect(Collectors.toList());
     }
     public PortfolioResponse getPortfolioById(Long id){
         Portfolio portfolio = portfolioRepository.findById(id)
                 .orElseThrow(()-> new RuntimeException(("portfolio not found")));
-        return new PortfolioResponse(
-                portfolio.getId(),
-                portfolio.getName(),
-                portfolio.getCashBalance(),
-                portfolio.getTotalMarketValue(),
-                portfolio.getTotalGainLoss(),
-                portfolio.getTotalGainLossPercentage(),
-                portfolio.isDefault(),
-                portfolio.getCreatedAt(),
-                portfolio.getUpdatedAt());
+        return toPortfolioResponse(portfolio);
+    }
+    public List<PortfolioValuation> getPortfolioValuationByIId(long id){
+        return portfolioValuationRepository.findByPortfolio_IdOrderBySnapshotTimeAsc(id);
+    }
+    public PortfolioResponse getDefaultPortfolioByUser(String email){
+        User user =  userRepository.findByEmail(email)
+                .orElseThrow(()->new RuntimeException("User cannot be found"));
+
+        Portfolio portfolio = portfolioRepository.findByUserIdAndIsDefault(user.getId(), true)
+                .orElse(null);
+
+        return portfolio == null ? null : toPortfolioResponse(portfolio);
     }
     public PortfolioResponse createPortfolio(CreatePortfolioRequest createPortfolioRequest, String email){
         User user =  userRepository.findByEmail(email)
@@ -60,17 +76,12 @@ public class PortfolioService {
         portfolio.setCashBalance(createPortfolioRequest.getCashBalance());
         portfolio.setDefault(createPortfolioRequest.isDefault());
         Portfolio newPortfolio = portfolioRepository.save(portfolio);
-        return new PortfolioResponse(
-                newPortfolio.getId(),
-                newPortfolio.getName(),
-                newPortfolio.getCashBalance(),
-                newPortfolio.getTotalMarketValue(),
-                newPortfolio.getTotalGainLoss(),
-                newPortfolio.getTotalGainLossPercentage(),
-                newPortfolio.isDefault(),
-                newPortfolio.getCreatedAt(),
-                newPortfolio.getUpdatedAt()
-        );
+
+        if (newPortfolio.getCashBalance().compareTo(BigDecimal.ZERO) > 0) {
+            transactionService.logTransaction(newPortfolio, newPortfolio.getCashBalance(), TransactionType.ADD_FUNDS);
+        }
+
+        return toPortfolioResponse(newPortfolio);
     }
     public PortfolioResponse updatePortfolioById(Long id, UpdatePortfolioRequest updatePortfolioRequest, String email){
         User user = userRepository.findByEmail(email).orElseThrow(()->new RuntimeException("This user does not exist"));
@@ -85,29 +96,55 @@ public class PortfolioService {
             }
         }
 
+        BigDecimal oldBalance = portfolio.getCashBalance();
+        BigDecimal newBalance = updatePortfolioRequest.getCashBalance();
+
         portfolio.setName(updatePortfolioRequest.getName());
-        portfolio.setCashBalance(updatePortfolioRequest.getCashBalance());
+        portfolio.setCashBalance(newBalance);
         portfolio.setDefault(updatePortfolioRequest.isDefault());
 
         Portfolio updatedPortfolio = portfolioRepository.save(portfolio);
-        return new PortfolioResponse(
-                updatedPortfolio.getId(),
-                updatedPortfolio.getName(),
-                updatedPortfolio.getCashBalance(),
-                updatedPortfolio.getTotalMarketValue(),
-                updatedPortfolio.getTotalGainLoss(),
-                updatedPortfolio.getTotalGainLossPercentage(),
-                updatedPortfolio.isDefault(),
-                updatedPortfolio.getCreatedAt(),
-                updatedPortfolio.getUpdatedAt()
-        );
+
+        BigDecimal difference = newBalance.subtract(oldBalance);
+        if (difference.compareTo(BigDecimal.ZERO) > 0) {
+            transactionService.logTransaction(updatedPortfolio, difference, TransactionType.ADD_FUNDS);
+        } else if (difference.compareTo(BigDecimal.ZERO) < 0) {
+            transactionService.logTransaction(updatedPortfolio, difference.abs(), TransactionType.WITHDRAWAL);
+        }
+        return toPortfolioResponse(updatedPortfolio);
     }
+    public PortfolioResponse addFunds(Long id, BigDecimal amount) {
+        Portfolio portfolio = portfolioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Portfolio not found"));
+
+        portfolio.setCashBalance(portfolio.getCashBalance().add(amount));
+        Portfolio updatedPortfolio = portfolioRepository.save(portfolio);
+
+        transactionService.logTransaction(updatedPortfolio, amount, TransactionType.ADD_FUNDS);
+
+        return toPortfolioResponse(updatedPortfolio);
+    }
+
     public void deletePortfolioById(Long id){
         Portfolio portfolio = portfolioRepository.findById(id)
                 .orElseThrow(()-> new RuntimeException("Portfolio not found"));
 
         portfolioRepository.delete(portfolio);
 
+    }
+
+    private PortfolioResponse toPortfolioResponse(Portfolio portfolio) {
+        return new PortfolioResponse(
+                portfolio.getId(),
+                portfolio.getName(),
+                portfolio.getCashBalance(),
+                portfolio.getTotalMarketValue(),
+                portfolio.getTotalGainLoss(),
+                portfolio.getTotalGainLossPercentage(),
+                portfolio.isDefault(),
+                portfolio.getCreatedAt(),
+                portfolio.getUpdatedAt()
+        );
     }
 
 

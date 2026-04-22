@@ -15,6 +15,26 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
+/**
+ * JWT (JSON Web Token) service responsible for generating, parsing, and validating authentication tokens.
+ *
+ * How JWT works in this app:
+ * 1. When a user logs in, AuthService calls generateToken() to create a signed JWT containing the user's ID and email.
+ * 2. The JWT is sent to the frontend as an HttpOnly cookie named "access_token".
+ * 3. On every subsequent request, the browser automatically sends the cookie.
+ * 4. JwtAuthenticationFilter intercepts each request, extracts the JWT from the cookie,
+ *    and calls this service to validate it and extract the user's identity.
+ *
+ * JWT structure: Header.Payload.Signature
+ * - Header: algorithm (HS256) and token type.
+ * - Payload (claims): userId, email, subject (email), issued-at, expiration.
+ * - Signature: HMAC-SHA256 hash of header+payload using the secret key — ensures the token hasn't been tampered with.
+ *
+ * Security:
+ * - The secret key (app.jwt.secret) is stored in application.properties and used to sign/verify tokens.
+ * - Tokens expire after 1 hour, forcing re-authentication.
+ * - Using HttpOnly cookies (set in AuthService) prevents JavaScript from accessing the token, mitigating XSS attacks.
+ */
 @Service
 public class JwtService {
     @Value("${app.jwt.secret}")
@@ -23,6 +43,7 @@ public class JwtService {
     @Value("${app.jwt.expiration-ms}")
     private long jwtExpirationMs;
 
+    // Generates a signed JWT with the user's ID and email as claims. Token expires in 1 hour.
     public String generateToken(User user) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("userId", user.getId());
@@ -32,7 +53,7 @@ public class JwtService {
                 .claims(claims)
                 .subject(user.getEmail())
                 .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60))
+                .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24))
                 .signWith(getSigningKey())
                 .compact();
     }

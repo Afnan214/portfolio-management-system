@@ -6,12 +6,17 @@ import { authGuard } from './auth/auth.guard';
 import { CreatePortfolio } from './pages/portfolio/create-portfolio/create-portfolio';
 import { PortfolioDetails } from './pages/portfolio/portfolio-details/portfolio-details';
 import { Portfolios } from './pages/portfolio/portfolios/portfolios';
+import { MarketOverview } from './pages/market-overview/market-overview';
+import { Profile } from './pages/profile/profile';
 import { ConsoleContainer } from './components/console-container/console-container';
+import { HelpCenter } from './pages/help-center/help-center';
+import { Settings } from './pages/settings/settings';
 import { loggedinRedirect } from './auth/loggedin-redirect';
 export const routes: Routes = [
   {
     path: '',
     loadComponent: () => import('./pages/landing-page/landing-page').then((m) => m.LandingPage),
+    pathMatch: 'full',
   },
   {
     path: 'register',
@@ -27,6 +32,11 @@ export const routes: Routes = [
     path: 'console',
     component: ConsoleContainer,
     children: [
+      {
+        path: '',
+        redirectTo: 'dashboard',
+        pathMatch: 'full',
+      },
       {
         path: 'dashboard',
         component: Dashboard,
@@ -47,6 +57,46 @@ export const routes: Routes = [
         component: PortfolioDetails,
         canActivate: [authGuard],
       },
+      {
+        path: 'market',
+        component: MarketOverview,
+        canActivate: [authGuard],
+      },
+      {
+        path: 'profile',
+        component: Profile,
+        canActivate: [authGuard],
+      },
+      {
+        path: 'help',
+        component: HelpCenter,
+        canActivate: [authGuard],
+      },
+      {
+        path: 'settings',
+        component: Settings,
+        canActivate: [authGuard],
+      },
+      {
+        path: '**',
+        redirectTo: 'dashboard',
+      },
     ],
+  },
+  {
+    path: 'preview-profile',
+    component: Profile,
+  },
+  {
+    path: 'preview-help',
+    component: HelpCenter,
+  },
+  {
+    path: 'preview-settings',
+    component: Settings,
+  },
+  {
+    path: '**',
+    redirectTo: '',
   },
 ];

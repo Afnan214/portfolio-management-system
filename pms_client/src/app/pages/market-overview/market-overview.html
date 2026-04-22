@@ -1,0 +1,350 @@
+<section class="min-h-screen bg-[#f6f8f6] text-slate-800">
+  <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+    <div class="flex items-center gap-3">
+      <lucide-icon [img]="Coins" [size]="34"></lucide-icon>
+      <h1 class="text-2xl font-bold">Market Overview</h1>
+      <span
+        class="inline-flex items-center gap-1.5 rounded-full bg-green-50 px-3 py-1 text-xs font-semibold text-green-700"
+      >
+        <span class="relative flex h-2 w-2">
+          <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-500 opacity-75"></span>
+          <span class="relative inline-flex h-2 w-2 rounded-full bg-green-500"></span>
+        </span>
+        Live Market
+      </span>
+    </div>
+    <hr class="mt-4 border-slate-200" />
+
+    <!-- Tabs -->
+    <div class="mt-6">
+      <div class="flex gap-1 rounded-xl bg-slate-100 p-1 w-fit">
+        <button
+          (click)="activeTab = 'stocks'"
+          class="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition"
+          [ngClass]="activeTab === 'stocks'
+            ? 'bg-white text-slate-800 shadow-sm'
+            : 'text-slate-500 hover:text-slate-700'"
+        >
+          <lucide-icon [img]="Flame" [size]="16"></lucide-icon>
+          Most Active
+        </button>
+        <button
+          (click)="activeTab = 'news'"
+          class="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition"
+          [ngClass]="activeTab === 'news'
+            ? 'bg-white text-slate-800 shadow-sm'
+            : 'text-slate-500 hover:text-slate-700'"
+        >
+          <lucide-icon [img]="Newspaper" [size]="16"></lucide-icon>
+          Market News
+        </button>
+      </div>
+
+      <!-- Most Active Stocks -->
+      @if (activeTab === 'stocks') {
+        <div class="mt-4 flex gap-4 overflow-x-auto pb-2">
+          @if (mostActiveStocks$ | async; as mostActiveStocks) {
+            @for (stock of mostActiveStocks; track stock.symbol) {
+              <div
+                class="flex min-w-[180px] flex-col items-center gap-3 rounded-2xl bg-white px-5 py-5 shadow-sm transition hover:shadow-md"
+              >
+                <div class="flex items-center gap-2">
+                  <img
+                    [src]="getLogoUrl(stock.symbol)"
+                    [alt]="stock.symbol"
+                    class="h-10 w-10 rounded-full object-cover"
+                    onerror="this.style.display='none'"
+                  />
+                  <span class="text-sm font-bold text-slate-800">{{ stock.symbol }}</span>
+                </div>
+                <span class="text-lg font-semibold text-slate-900">
+                  {{ stock.currentPrice | number: '1.2-2' }}$
+                </span>
+                <span
+                  class="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold"
+                  [ngClass]="
+                    stock.percentChange >= 0
+                      ? 'bg-green-50 text-green-700'
+                      : 'bg-red-50 text-red-600'
+                  "
+                >
+                  <lucide-icon
+                    [img]="stock.percentChange >= 0 ? TrendingUp : TrendingDown"
+                    [size]="14"
+                  ></lucide-icon>
+                  {{ stock.percentChange >= 0 ? '+' : '' }}{{ stock.percentChange | number: '1.2-2' }}%
+                </span>
+              </div>
+            }
+          }
+        </div>
+      }
+
+      <!-- Market News -->
+      @if (activeTab === 'news') {
+        @if (marketNews$ | async; as news) {
+          <div class="mt-4 flex gap-4 overflow-x-auto pb-2">
+            @for (article of news; track article.id) {
+              <a
+                [href]="article.url"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="group flex min-w-[280px] max-w-[280px] flex-col rounded-2xl bg-white shadow-sm transition hover:shadow-md"
+              >
+                @if (article.image) {
+                  <img
+                    [src]="article.image"
+                    [alt]="article.headline"
+                    class="h-32 w-full rounded-t-2xl object-cover"
+                    onerror="this.style.display='none'"
+                  />
+                }
+                <div class="flex flex-1 flex-col gap-2 p-4">
+                  <div class="flex items-center justify-between text-xs text-slate-400">
+                    <span class="font-medium uppercase tracking-wide">{{ article.source }}</span>
+                    <span>{{ formatNewsDate(article.datetime) }}</span>
+                  </div>
+                  <h3 class="line-clamp-2 text-sm font-semibold text-slate-800 group-hover:text-green-700 transition">
+                    {{ article.headline }}
+                  </h3>
+                  <p class="line-clamp-2 text-xs text-slate-500 leading-relaxed">{{ article.summary }}</p>
+                  <div class="mt-auto flex items-center gap-1 pt-2 text-xs font-medium text-green-600">
+                    Read more
+                    <lucide-icon [img]="ExternalLink" [size]="12"></lucide-icon>
+                  </div>
+                </div>
+              </a>
+            } @empty {
+              <div class="py-10 text-center text-sm text-slate-400 w-full">
+                No market news available.
+              </div>
+            }
+          </div>
+        } @else {
+          <!-- Skeleton loading -->
+          <div class="mt-4 flex gap-4 overflow-x-auto pb-2">
+            @for (i of [1, 2, 3, 4]; track i) {
+              <div class="flex min-w-[280px] max-w-[280px] flex-col rounded-2xl bg-white shadow-sm animate-pulse">
+                <div class="h-32 w-full rounded-t-2xl bg-slate-200"></div>
+                <div class="flex flex-col gap-3 p-4">
+                  <div class="flex justify-between">
+                    <div class="h-3 w-16 rounded bg-slate-200"></div>
+                    <div class="h-3 w-12 rounded bg-slate-200"></div>
+                  </div>
+                  <div class="h-4 w-full rounded bg-slate-200"></div>
+                  <div class="h-4 w-3/4 rounded bg-slate-200"></div>
+                  <div class="h-3 w-full rounded bg-slate-100"></div>
+                  <div class="h-3 w-2/3 rounded bg-slate-100"></div>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      }
+    </div>
+
+    <!-- All Stocks Table -->
+    <div class="mt-10">
+      <h2 class="text-lg font-semibold text-slate-700">All Assets</h2>
+
+      <!-- Search & Filter Bar -->
+      <div class="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <!-- Search -->
+        <div class="relative w-full sm:max-w-xs">
+          <lucide-icon
+            [img]="Search"
+            [size]="16"
+            class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+          ></lucide-icon>
+          <input
+            type="text"
+            [(ngModel)]="searchTerm"
+            placeholder="Search by symbol..."
+            class="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-10 pr-4 text-sm text-slate-700 outline-none transition focus:border-green-400 focus:ring-2 focus:ring-green-100"
+          />
+        </div>
+
+        <!-- Filter Dropdown + Quick Buttons -->
+        <div class="flex items-center gap-2">
+          <!-- Custom Dropdown -->
+          <div class="filter-dropdown relative">
+            <button
+              (click)="toggleDropdown()"
+              class="flex items-center gap-2 rounded-xl border bg-white py-2.5 pl-3 pr-4 text-sm transition hover:shadow-sm"
+              [ngClass]="hasActiveFilters
+                ? 'border-green-300 text-green-700'
+                : 'border-slate-200 text-slate-700 hover:border-slate-300'"
+            >
+              <lucide-icon [img]="SlidersHorizontal" [size]="16" class="text-slate-400"></lucide-icon>
+              <span class="font-medium">{{ activeFilterLabel }}</span>
+              <lucide-icon
+                [img]="ChevronDown"
+                [size]="14"
+                class="text-slate-400 transition-transform duration-200"
+                [ngClass]="{ 'rotate-180': dropdownOpen }"
+              ></lucide-icon>
+            </button>
+
+            @if (dropdownOpen) {
+              <div class="absolute right-0 z-20 mt-2 w-64 overflow-hidden rounded-xl border border-slate-100 bg-white p-4 shadow-lg">
+                <!-- Change -->
+                <div class="mb-3">
+                  <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-400">Change</label>
+                  <div class="flex gap-1.5">
+                    @for (opt of [{ value: 'all', label: 'All' }, { value: 'gainers', label: 'Gainers' }, { value: 'losers', label: 'Losers' }]; track opt.value) {
+                      <button
+                        (click)="activeFilter = $any(opt.value)"
+                        class="rounded-lg px-3 py-1.5 text-xs font-medium transition"
+                        [ngClass]="activeFilter === opt.value
+                          ? 'bg-slate-800 text-white'
+                          : 'bg-slate-100 text-slate-600 hover:bg-slate-200'"
+                      >
+                        {{ opt.label }}
+                      </button>
+                    }
+                  </div>
+                </div>
+
+                <!-- Sector -->
+                <div class="mb-3">
+                  <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-400">Sector</label>
+                  <select
+                    [(ngModel)]="activeSector"
+                    (ngModelChange)="onSectorChange()"
+                    class="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700 outline-none transition focus:border-green-400"
+                  >
+                    <option value="">All Sectors</option>
+                    @for (sector of sectors; track sector) {
+                      <option [value]="sector">{{ sector }}</option>
+                    }
+                  </select>
+                </div>
+
+                <!-- Industry -->
+                <div class="mb-3">
+                  <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-400">Industry</label>
+                  <select
+                    [(ngModel)]="activeIndustry"
+                    class="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700 outline-none transition focus:border-green-400"
+                  >
+                    <option value="">All Industries</option>
+                    @for (industry of filteredIndustries; track industry) {
+                      <option [value]="industry">{{ industry }}</option>
+                    }
+                  </select>
+                </div>
+
+                <!-- Reset -->
+                <button
+                  (click)="activeFilter = 'all'; activeSector = ''; activeIndustry = ''; onSectorChange()"
+                  class="w-full rounded-lg bg-slate-100 py-2 text-xs font-medium text-slate-500 transition hover:bg-slate-200"
+                >
+                  Reset Filters
+                </button>
+              </div>
+            }
+          </div>
+
+          <button
+            (click)="setFilter(activeFilter === 'gainers' ? 'all' : 'gainers')"
+            class="rounded-full px-4 py-2 text-xs font-semibold transition"
+            [ngClass]="
+              activeFilter === 'gainers'
+                ? 'bg-green-600 text-white'
+                : 'bg-white text-green-700 border border-green-200 hover:bg-green-50'
+            "
+          >
+            Top Gainers
+          </button>
+          <button
+            (click)="setFilter(activeFilter === 'losers' ? 'all' : 'losers')"
+            class="rounded-full px-4 py-2 text-xs font-semibold transition"
+            [ngClass]="
+              activeFilter === 'losers'
+                ? 'bg-red-500 text-white'
+                : 'bg-white text-red-600 border border-red-200 hover:bg-red-50'
+            "
+          >
+            Top Losers
+          </button>
+        </div>
+      </div>
+
+      <!-- Table -->
+      @if (allStocks$ | async; as allStocks) {
+        <div class="mt-4 overflow-hidden rounded-2xl bg-white shadow-sm">
+          <table class="w-full text-left">
+            <thead>
+              <tr class="border-b border-slate-100 text-xs font-semibold uppercase tracking-wider text-slate-400">
+                <th class="px-6 py-4">Asset</th>
+                <th class="px-6 py-4 text-right">Price</th>
+                <th class="hidden px-6 py-4 text-center sm:table-cell">Trend</th>
+                <th class="px-6 py-4 text-right">Change %</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (stock of filterStocks(allStocks); track stock.symbol) {
+                <tr class="border-b border-slate-50 transition hover:bg-slate-50/60">
+                  <!-- Asset -->
+                  <td class="px-6 py-4">
+                    <div class="flex items-center gap-3">
+                      <img
+                        [src]="getLogoUrl(stock.symbol)"
+                        [alt]="stock.symbol"
+                        class="h-9 w-9 rounded-full object-cover"
+                        onerror="this.style.display='none'"
+                      />
+                      <span class="text-sm font-semibold text-slate-800">{{ stock.symbol }}</span>
+                    </div>
+                  </td>
+                  <!-- Price -->
+                  <td class="px-6 py-4 text-right text-sm font-medium text-slate-800">
+                    {{ stock.currentPrice | number: '1.2-2' }} $
+                  </td>
+                  <!-- Sparkline -->
+                  <td class="hidden px-6 py-2 sm:table-cell">
+                    <div class="flex justify-center">
+                      <svg width="100" height="32" viewBox="0 0 100 32" fill="none">
+                        <path
+                          [attr.d]="getSparklinePath(stock.symbol, stock.percentChange)"
+                          [attr.stroke]="stock.percentChange >= 0 ? '#22c55e' : '#ef4444'"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          fill="none"
+                        />
+                      </svg>
+                    </div>
+                  </td>
+                  <!-- Change % -->
+                  <td class="px-6 py-4 text-right">
+                    <span
+                      class="inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold"
+                      [ngClass]="
+                        stock.percentChange >= 0
+                          ? 'bg-green-50 text-green-700'
+                          : 'bg-red-50 text-red-600'
+                      "
+                    >
+                      <lucide-icon
+                        [img]="stock.percentChange >= 0 ? TrendingUp : TrendingDown"
+                        [size]="14"
+                      ></lucide-icon>
+                      {{ stock.percentChange >= 0 ? '+' : '' }}{{ stock.percentChange | number: '1.2-2' }}%
+                    </span>
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="4" class="px-6 py-10 text-center text-sm text-slate-400">
+                    No assets match your search.
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>
+  </div>
+</section>
